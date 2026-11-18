@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight, Plus, Truck } from "lucide-react";
 import { AddToCartForm } from "@/components/add-to-cart-form";
+import { Product3D } from "@/components/product-3d";
 import { ProductCard } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
 import { prisma } from "@/lib/db";
@@ -103,13 +103,11 @@ export default async function ProductPage({
       <div className="mt-8 grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
         <div className="self-start lg:sticky lg:top-32">
           <div className="tk-hero-media relative aspect-[4/5] overflow-hidden bg-paper-deep">
-            <Image
+            <Product3D
               src={image?.url ?? "/uploads/placeholder.svg"}
               alt={image?.alt ?? product.name}
-              fill
               preload
               sizes="(min-width: 1024px) 48vw, 100vw"
-              className="object-cover"
             />
           </div>
           <p className="mt-3 text-[11px] leading-relaxed text-muted">

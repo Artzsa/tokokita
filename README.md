@@ -30,6 +30,7 @@ Ganti keduanya sebelum toko dipakai sungguhan.
 - Panel admin: ringkasan, kelola produk (termasuk unggah foto & varian), kelola pesanan + ubah status, kelola kategori.
 - Sesi admin pakai cookie bertanda tangan HMAC; keranjang juga disimpan di cookie. Tidak ada database user yang kompleks.
 - Pembayaran masih manual: transfer bank atau COD. Tidak ada gateway.
+- Kartu katalog 3D memakai Three.js + React Three Fiber: gambar produk jadi tekstur kartu berketebalan yang bisa diputar dengan kursor/panah keyboard. Scene di-*lazy load*; kartu hanya memasang kanvas saat di-hover. Tanpa WebGL atau dengan `prefers-reduced-motion`, gambar statis yang tampil.
 
 ## Skrip
 

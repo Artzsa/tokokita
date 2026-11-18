@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { ArrowUpRight } from "lucide-react";
+import { Product3D } from "@/components/product-3d";
 import { formatIDR } from "@/lib/format";
 
 export type ProductCardProduct = Prisma.ProductGetPayload<{
@@ -22,13 +22,12 @@ export function ProductCard({
     <article className="group">
       <Link href={`/produk/${product.slug}`} className="block">
         <div className="relative aspect-[4/5] overflow-hidden bg-paper-deep">
-          <Image
+          <Product3D
             src={image?.url ?? "/uploads/placeholder.svg"}
             alt={image?.alt ?? product.name}
-            fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             preload={preload}
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.035]"
+            hoverOnly
           />
           {product.compareAt ? (
             <span className="absolute left-3 top-3 bg-clay px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-paper">

@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { Product3D } from "@/components/product-3d";
 import { ProductCard } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
 import { prisma } from "@/lib/db";
@@ -99,13 +99,11 @@ export default async function HomePage() {
 
             <div className="tk-hero-media relative aspect-[4/5] overflow-hidden bg-paper-deep">
               {heroImage ? (
-                <Image
+                <Product3D
                   src={heroImage.url}
                   alt={heroImage.alt}
-                  fill
                   preload
                   sizes="(min-width: 1024px) 46vw, 100vw"
-                  className="object-cover"
                 />
               ) : null}
             </div>
