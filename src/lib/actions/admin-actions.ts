@@ -1,0 +1,311 @@
+"use server";
+
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { requireAdmin } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import { orderStatuses, slugify } from "@/lib/format";
+
+export type ProductFormState = {
+  error?: string;
+  errors?: Record<string, string>;
+};
+
+export type CategoryFormState = {
+  error?: string;
+  ok?: boolean;
+};
+
+const productStatuses = ["draft", "active", "archived"] as const;
+const imageExtensions: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/avif": "avif",
+  "image/gif": "gif",
+};
+
+function text(formData: FormData, key: string) {
+  return String(formData.get(key) ?? "").trim();
+}
+
+function toInt(value: string) {
+  const digits = value.replace(/[^\d]/g, "");
+  if (!digits) return 0;
+  return Math.min(Number(digits), 999_999_999);
+}
+
+async function uniqueSlug(base: string, excludeId?: string) {
+  const root = slugify(base) || `produk-${Date.now()}`;
+  let candidate = root;
+  let counter = 2;
+
+  while (true) {
+    const existing = await prisma.product.findUnique({
+      where: { slug: candidate },
+      select: { id: true },
+    });
+    if (!existing || existing.id === excludeId) return candidate;
+    candidate = `${root}-${counter}`;
+    counter += 1;
+  }
+}
+
+async function saveImage(file: File | null, slug: string) {
+  if (!file || file.size === 0) return null;
+
+  const extension = imageExtensions[file.type];
+  if (!extension) {
+    throw new Error("Format foto harus JPG, PNG, WebP, AVIF, atau GIF.");
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error("Ukuran foto maksimal 5 MB.");
+  }
+
+  const directory = path.join(process.cwd(), "public", "uploads", "products");
+  await mkdir(directory, { recursive: true });
+
+  const filename = `${slug}-${Date.now().toString(36)}.${extension}`;
+  await writeFile(
+    path.join(directory, filename),
+    Buffer.from(await file.arrayBuffer()),
+  );
+
+  return `/uploads/products/${filename}`;
+}
+
+function parseVariants(raw: string, productSlug: string) {
+  const lines = raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  return lines.map((line, index) => {
+    const [labelRaw, skuRaw, priceRaw, stockRaw] = line
+      .split("|")
+      .map((part) => (part ?? "").trim());
+
+    const label = labelRaw || `Varian ${index + 1}`;
+    const sku = (skuRaw || `${productSlug}-${index + 1}`)
+      .toUpperCase()
+      .replace(/\s+/g, "-");
+    const price = priceRaw ? toInt(priceRaw) : 0;
+    const stock = stockRaw ? toInt(stockRaw) : 0;
+
+    return {
+      label,
+      sku,
+      price: price > 0 ? price : null,
+      stock,
+    };
+  });
+}
+
+export async function saveProductAction(
+  _prev: ProductFormState,
+  formData: FormData,
+): Promise<ProductFormState> {
+  await requireAdmin();
+
+  const id = text(formData, "id");
+  const name = text(formData, "name");
+  const slugInput = text(formData, "slug");
+  const categoryId = text(formData, "categoryId");
+  const tagline = text(formData, "tagline");
+  const description = text(formData, "description");
+  const price = toInt(text(formData, "price"));
+  const compareAtRaw = text(formData, "compareAt");
+  const compareAt = compareAtRaw ? toInt(compareAtRaw) : null;
+  const stock = toInt(text(formData, "stock"));
+  const status = text(formData, "status");
+  const material = text(formData, "material");
+  const dimensions = text(formData, "dimensions");
+  const care = text(formData, "care");
+  const origin = text(formData, "origin");
+  const variantsRaw = text(formData, "variants");
+
+  const errors: Record<string, string> = {};
+
+  if (name.length < 2) errors.name = "Nama produk minimal 2 karakter.";
+  if (!categoryId) errors.categoryId = "Pilih kategori produk.";
+  if (tagline.length < 4) errors.tagline = "Tulis satu kalimat pendek sebagai ringkasan.";
+  if (description.length < 20)
+    errors.description = "Deskripsi minimal 20 karakter — jelaskan bahan dan pemakaiannya.";
+  if (price <= 0) errors.price = "Harga harus lebih dari 0.";
+  if (!productStatuses.includes(status as (typeof productStatuses)[number])) {
+    errors.status = "Status produk tidak dikenal.";
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return { error: "Periksa kembali kolom yang ditandai.", errors };
+  }
+
+  const category = await prisma.category.findUnique({ where: { id: categoryId } });
+  if (!category) return { error: "Kategori tidak ditemukan. Muat ulang halaman." };
+
+  const slug = await uniqueSlug(slugInput || name, id || undefined);
+  const variants = parseVariants(variantsRaw, slug);
+
+  let imageUrl: string | null = null;
+  const imageFile = formData.get("image");
+  try {
+    imageUrl = await saveImage(imageFile instanceof File ? imageFile : null, slug);
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Foto gagal diunggah.",
+    };
+  }
+
+  const payload = {
+    name,
+    slug,
+    categoryId,
+    tagline,
+    description,
+    price,
+    compareAt: compareAt && compareAt > price ? compareAt : null,
+    stock,
+    status,
+    material: material || null,
+    dimensions: dimensions || null,
+    care: care || null,
+    origin: origin || null,
+  };
+
+  try {
+    if (id) {
+      await prisma.$transaction(async (tx) => {
+        const existingVariants = await tx.productVariant.findMany({
+          where: { productId: id },
+        });
+
+        await tx.product.update({ where: { id }, data: payload });
+
+        if (imageUrl) {
+          await tx.productImage.deleteMany({ where: { productId: id } });
+          await tx.productImage.create({
+            data: { productId: id, url: imageUrl, alt: name, position: 0 },
+          });
+        }
+
+        const keptSkus = variants.map((variant) => variant.sku);
+        await tx.productVariant.deleteMany({
+          where: {
+            productId: id,
+            sku: keptSkus.length > 0 ? { notIn: keptSkus } : undefined,
+          },
+        });
+
+        for (const variant of variants) {
+          const existing = existingVariants.find((entry) => entry.sku === variant.sku);
+          if (existing) {
+            await tx.productVariant.update({
+              where: { id: existing.id },
+              data: {
+                label: variant.label,
+                price: variant.price,
+                stock: variant.stock,
+              },
+            });
+          } else {
+            await tx.productVariant.create({
+              data: { ...variant, productId: id },
+            });
+          }
+        }
+      });
+    } else {
+      await prisma.product.create({
+        data: {
+          ...payload,
+          images: {
+            create: [
+              {
+                url: imageUrl ?? "/uploads/placeholder.svg",
+                alt: name,
+                position: 0,
+              },
+            ],
+          },
+          variants: { create: variants },
+        },
+      });
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("Unique constraint")) {
+      return { error: "SKU varian sudah dipakai produk lain. Ganti SKU-nya." };
+    }
+    return { error: "Produk gagal disimpan. Coba lagi." };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/produk");
+  revalidatePath(`/produk/${slug}`);
+  revalidatePath("/admin/produk");
+
+  redirect("/admin/produk?saved=1");
+}
+
+export async function deleteProductAction(formData: FormData) {
+  await requireAdmin();
+  const id = text(formData, "id");
+  if (!id) return;
+
+  await prisma.product.delete({ where: { id } }).catch(() => null);
+
+  revalidatePath("/");
+  revalidatePath("/produk");
+  revalidatePath("/admin/produk");
+  redirect("/admin/produk?deleted=1");
+}
+
+export async function createCategoryAction(
+  _prev: CategoryFormState,
+  formData: FormData,
+): Promise<CategoryFormState> {
+  await requireAdmin();
+  const name = text(formData, "name");
+  const blurb = text(formData, "blurb");
+  const slugInput = text(formData, "slug");
+
+  if (name.length < 2) return { error: "Nama kategori minimal 2 karakter." };
+
+  const slug = slugify(slugInput || name);
+  if (!slug) return { error: "Slug kategori tidak valid." };
+
+  const clash = await prisma.category.findUnique({ where: { slug } });
+  if (clash) return { error: "Slug kategori sudah dipakai." };
+
+  const position = await prisma.category.count();
+
+  await prisma.category.create({
+    data: { name, slug, blurb: blurb || null, position },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/produk");
+  revalidatePath("/admin/produk");
+  return { ok: true };
+}
+
+export async function updateOrderStatusAction(formData: FormData) {
+  await requireAdmin();
+  const id = text(formData, "id");
+  const status = text(formData, "status");
+
+  if (!id) return;
+  if (!orderStatuses.includes(status as (typeof orderStatuses)[number])) return;
+
+  await prisma.order.update({
+    where: { id },
+    data: { status },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/pesanan");
+  revalidatePath(`/admin/pesanan/${id}`);
+  revalidatePath("/pesanan");
+}
