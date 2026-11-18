@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
+import { Reveal } from "@/components/reveal";
 import { prisma } from "@/lib/db";
 import { formatIDR } from "@/lib/format";
 import { store, whatsappLink } from "@/lib/store";
@@ -96,7 +97,7 @@ export default async function HomePage() {
               Katalog {new Date().getFullYear()}
             </span>
 
-            <div className="relative aspect-[4/5] overflow-hidden bg-paper-deep">
+            <div className="tk-hero-media relative aspect-[4/5] overflow-hidden bg-paper-deep">
               {heroImage ? (
                 <Image
                   src={heroImage.url}
@@ -145,31 +146,33 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4">
-          {categories.map((category, index) => (
-            <Link
-              key={category.id}
-              href={`/produk?kategori=${category.slug}`}
-              className="group flex flex-col justify-between border-b border-line py-7 transition-colors hover:bg-paper-deep/50 lg:border-b-0 lg:border-r lg:px-6 lg:first:pl-0 lg:last:border-r-0"
-            >
-              <div>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
-                  0{index + 1}
+        <Reveal delay={80}>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4">
+            {categories.map((category, index) => (
+              <Link
+                key={category.id}
+                href={`/produk?kategori=${category.slug}`}
+                className="group flex flex-col justify-between border-b border-line py-7 transition-colors hover:bg-paper-deep/50 lg:border-b-0 lg:border-r lg:px-6 lg:first:pl-0 lg:last:border-r-0"
+              >
+                <div>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
+                    0{index + 1}
+                  </span>
+                  <h2 className="display mt-3 text-2xl transition-colors group-hover:text-clay">
+                    {category.name}
+                  </h2>
+                  <p className="mt-2 max-w-[26ch] text-[13px] leading-relaxed text-muted">
+                    {category.blurb}
+                  </p>
+                </div>
+                <span className="mt-6 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
+                  {category._count.products} produk
+                  <ArrowUpRight size={12} />
                 </span>
-                <h2 className="display mt-3 text-2xl transition-colors group-hover:text-clay">
-                  {category.name}
-                </h2>
-                <p className="mt-2 max-w-[26ch] text-[13px] leading-relaxed text-muted">
-                  {category.blurb}
-                </p>
-              </div>
-              <span className="mt-6 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
-                {category._count.products} produk
-                <ArrowUpRight size={12} />
-              </span>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        </Reveal>
       </section>
 
       <section className="wrap mt-20">
@@ -188,13 +191,15 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        <div className="mt-10 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((product, index) => (
-            <div key={product.id} className={index === 1 ? "lg:mt-14" : undefined}>
-              <ProductCard product={product} preload={index === 0} />
-            </div>
-          ))}
-        </div>
+        <Reveal delay={120}>
+          <div className="mt-10 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((product, index) => (
+              <div key={product.id} className={index === 1 ? "lg:mt-14" : undefined}>
+                <ProductCard product={product} preload={index === 0} />
+              </div>
+            ))}
+          </div>
+        </Reveal>
       </section>
 
       <section className="mt-24 bg-moss text-paper">
@@ -219,26 +224,28 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <ol className="border-t border-paper/15">
-            {principles.map((item, index) => (
-              <li
-                key={item.title}
-                className="grid grid-cols-[auto_1fr] gap-6 border-b border-paper/15 py-7"
-              >
-                <span className="display text-3xl text-paper/35">
-                  0{index + 1}
-                </span>
-                <div>
-                  <h3 className="text-[12px] font-semibold uppercase tracking-[0.14em]">
-                    {item.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-paper/70">
-                    {item.body}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          <Reveal delay={160}>
+            <ol className="border-t border-paper/15">
+              {principles.map((item, index) => (
+                <li
+                  key={item.title}
+                  className="grid grid-cols-[auto_1fr] gap-6 border-b border-paper/15 py-7"
+                >
+                  <span className="display text-3xl text-paper/35">
+                    0{index + 1}
+                  </span>
+                  <div>
+                    <h3 className="text-[12px] font-semibold uppercase tracking-[0.14em]">
+                      {item.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-paper/70">
+                      {item.body}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </Reveal>
         </div>
       </section>
 

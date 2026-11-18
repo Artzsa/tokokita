@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
+import { ArrowUpRight } from "lucide-react";
 import { formatIDR } from "@/lib/format";
 
 export type ProductCardProduct = Prisma.ProductGetPayload<{
@@ -39,6 +40,10 @@ export function ProductCard({
               Stok habis
             </span>
           ) : null}
+          <span className="tk-card-cta" aria-hidden="true">
+            Lihat
+            <ArrowUpRight size={11} />
+          </span>
         </div>
 
         <div className="mt-4 flex items-start justify-between gap-5">

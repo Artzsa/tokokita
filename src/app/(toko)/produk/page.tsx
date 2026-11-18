@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { ArrowRight, SearchX } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
+import { Reveal } from "@/components/reveal";
 import { prisma } from "@/lib/db";
 
 export const metadata: Metadata = {
@@ -203,15 +204,17 @@ export default async function CatalogPage({
       ) : null}
 
       {products.length > 0 ? (
-        <div className="mt-10 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((product, index) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              preload={index < 3}
-            />
-          ))}
-        </div>
+        <Reveal>
+          <div className="mt-10 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                preload={index < 3}
+              />
+            ))}
+          </div>
+        </Reveal>
       ) : (
         <div className="mt-16 flex flex-col items-start gap-6 border border-dashed border-line px-8 py-16">
           <SearchX size={28} strokeWidth={1.2} className="text-clay" />

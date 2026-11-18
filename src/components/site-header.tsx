@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
+import { CartCountBadge } from "@/components/cart-count-badge";
 import { getCartCount } from "@/lib/cart";
 import { store } from "@/lib/store";
 
@@ -22,7 +23,7 @@ export async function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur">
-      <div className="overflow-hidden bg-ink text-paper">
+      <div className="tk-ticker overflow-hidden bg-ink text-paper">
         <div className="tk-marquee-track">
           {[0, 1].map((copy) => (
             <div
@@ -77,9 +78,7 @@ export async function SiteHeader() {
           >
             <span className="hidden sm:inline">Keranjang</span>
             <span className="sm:hidden">Tas</span>
-            <span className="flex size-5 items-center justify-center rounded-full bg-ink text-[10px] text-paper group-hover:bg-clay">
-              {count}
-            </span>
+            <CartCountBadge key={count} count={count} />
           </Link>
         </div>
       </div>

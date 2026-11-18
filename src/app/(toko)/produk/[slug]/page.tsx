@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ChevronRight, Plus, Truck } from "lucide-react";
 import { AddToCartForm } from "@/components/add-to-cart-form";
 import { ProductCard } from "@/components/product-card";
+import { Reveal } from "@/components/reveal";
 import { prisma } from "@/lib/db";
 import { formatIDR } from "@/lib/format";
 import { store } from "@/lib/store";
@@ -101,7 +102,7 @@ export default async function ProductPage({
 
       <div className="mt-8 grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
         <div className="self-start lg:sticky lg:top-32">
-          <div className="relative aspect-[4/5] overflow-hidden bg-paper-deep">
+          <div className="tk-hero-media relative aspect-[4/5] overflow-hidden bg-paper-deep">
             <Image
               src={image?.url ?? "/uploads/placeholder.svg"}
               alt={image?.alt ?? product.name}
@@ -207,11 +208,13 @@ export default async function ProductPage({
               Lihat semua
             </Link>
           </div>
-          <div className="mt-8 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((item) => (
-              <ProductCard key={item.id} product={item} />
-            ))}
-          </div>
+          <Reveal>
+            <div className="mt-8 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+              {related.map((item) => (
+                <ProductCard key={item.id} product={item} />
+              ))}
+            </div>
+          </Reveal>
         </section>
       ) : null}
     </div>

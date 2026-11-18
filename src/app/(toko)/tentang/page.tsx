@@ -70,7 +70,7 @@ export default async function AboutPage() {
             </p>
           </div>
 
-          <div className="relative aspect-[4/5] overflow-hidden bg-paper-deep">
+          <div className="tk-hero-media relative aspect-[4/5] overflow-hidden bg-paper-deep">
             <Image
               src="/uploads/seed/lampu-meja-kaleng.svg"
               alt="Lampu meja kaleng di meja kerja Toko Kita"

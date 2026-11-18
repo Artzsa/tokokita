@@ -250,9 +250,122 @@
   animation: tk-marquee 38s linear infinite;
 }
 
+.tk-ticker:hover .tk-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes tk-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.tk-page-enter {
+  animation: tk-page-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes tk-hero-in {
+  from {
+    opacity: 0;
+    transform: scale(1.035);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.tk-hero-media img {
+  animation: tk-hero-in 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.tk-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 720ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--tk-delay, 0ms);
+}
+
+.tk-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.tk-card-cta {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  padding: 0.45rem 0.7rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease;
+}
+
+.group:hover .tk-card-cta,
+.group:focus-within .tk-card-cta {
+  opacity: 1;
+  transform: none;
+}
+
+.btn svg {
+  transition: transform 220ms ease;
+}
+
+.btn:hover svg:not(.animate-spin) {
+  transform: translateX(3px);
+}
+
+@keyframes tk-count-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.28);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.tk-count-pop {
+  animation: tk-count-pop 420ms ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .tk-marquee-track {
+  .tk-marquee-track,
+  .tk-page-enter,
+  .tk-hero-media img,
+  .tk-count-pop {
     animation: none;
+  }
+
+  .tk-reveal,
+  .tk-reveal.is-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .tk-card-cta {
+    transition: none;
   }
 }
 
