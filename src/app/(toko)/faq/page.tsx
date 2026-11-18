@@ -36,7 +36,7 @@ const groups = [
     items: [
       {
         q: "Apakah foto di katalog foto asli?",
-        a: "Belum. Foto yang tampil sekarang adalah ilustrasi sementara supaya tata letak bisa dinilai. Foto asli tiap produk sedang kami siapkan dan akan menggantikan ilustrasi tanpa mengubah harga.",
+        a: "Belum. Foto di katalog adalah foto stok berlisensi CC0/public domain yang dipakai sementara supaya bentuk barang bisa dibayangkan. Foto asli tiap produk sedang kami siapkan dan akan menggantikan foto stok tanpa mengubah harga.",
       },
       {
         q: "Kenapa warna bisa berbeda dari gambar?",

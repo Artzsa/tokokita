@@ -1,44 +1,7 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
-
-type Palette = {
-  bg: string;
-  block: string;
-  accent: string;
-  ink: string;
-};
-
-const palettes: Palette[] = [
-  { bg: "#e9e0d0", block: "#cbb99e", accent: "#a9491f", ink: "#2e4739" },
-  { bg: "#e4dccd", block: "#b9a88f", accent: "#2e4739", ink: "#171310" },
-  { bg: "#efe6d6", block: "#d3c0a4", accent: "#873614", ink: "#3f4f43" },
-  { bg: "#e6dfd2", block: "#c2ae92", accent: "#5b6b54", ink: "#a9491f" },
-];
-
-/**
- * Abstract "product photo" placeholder. Deliberately geometric and quiet so the
- * layout is evaluated on composition, not on stock photography.
- */
-function placeholderSvg(title: string, index: number) {
-  const palette = palettes[index % palettes.length];
-  const shift = (index % 3) * 40;
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-label="${title}">
-  <rect width="1200" height="1500" fill="${palette.bg}"/>
-  <rect x="90" y="150" width="1020" height="1200" fill="${palette.block}"/>
-  <path d="M 260 ${640 + shift} A 240 240 0 0 1 740 ${640 + shift} L 740 1210 L 260 1210 Z" fill="${palette.accent}"/>
-  <circle cx="${860 - shift}" cy="${420 + shift}" r="150" fill="${palette.ink}" opacity="0.92"/>
-  <rect x="260" y="${400 + shift}" width="480" height="14" fill="${palette.ink}" opacity="0.5"/>
-  <rect x="260" y="${440 + shift}" width="320" height="14" fill="${palette.ink}" opacity="0.35"/>
-  <rect x="90" y="1350" width="1020" height="1" fill="${palette.ink}" opacity="0.25"/>
-  <text x="90" y="1420" font-family="Georgia, serif" font-size="34" letter-spacing="6" fill="${palette.ink}" opacity="0.7">TOKO KITA</text>
-  <text x="1110" y="1420" text-anchor="end" font-family="Helvetica, Arial, sans-serif" font-size="22" letter-spacing="4" fill="${palette.ink}" opacity="0.5">FOTO CONTOH</text>
-</svg>`;
-}
 
 type SeedProduct = {
   name: string;
@@ -212,9 +175,6 @@ const products: SeedProduct[] = [
 ];
 
 async function main() {
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "seed");
-  await mkdir(uploadDir, { recursive: true });
-
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
   await prisma.productVariant.deleteMany();
@@ -241,13 +201,8 @@ async function main() {
 
   const createdProducts: { id: string; name: string; price: number }[] = [];
 
-  for (const [index, product] of products.entries()) {
-    const fileName = `${product.slug}.svg`;
-    await writeFile(
-      path.join(uploadDir, fileName),
-      placeholderSvg(product.name, index),
-      "utf8",
-    );
+  for (const product of products) {
+    const fileName = `${product.slug}.jpg`;
 
     const categoryId = categoryIds.get(product.category);
     if (!categoryId) throw new Error(`Kategori ${product.category} tidak ada`);
@@ -271,7 +226,7 @@ async function main() {
           create: [
             {
               url: `/uploads/seed/${fileName}`,
-              alt: `${product.name} — foto contoh`,
+              alt: `${product.name} — foto produk`,
               position: 0,
             },
           ],

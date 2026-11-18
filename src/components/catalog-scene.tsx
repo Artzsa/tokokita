@@ -35,18 +35,18 @@ function CatalogCard({
     if (!node) return;
 
     const t = state.clock.elapsedTime;
-    const targetY = tilt.current.y + Math.sin(t * 0.32) * 0.07;
-    const targetX = tilt.current.x + Math.sin(t * 0.47) * 0.025;
+    const targetY = tilt.current.y + Math.sin(t * 0.32) * 0.025;
+    const targetX = tilt.current.x + Math.sin(t * 0.47) * 0.01;
 
-    node.rotation.y = THREE.MathUtils.damp(node.rotation.y, targetY, 4, delta);
-    node.rotation.x = THREE.MathUtils.damp(node.rotation.x, targetX, 4, delta);
+    node.rotation.y = THREE.MathUtils.damp(node.rotation.y, targetY, 5, delta);
+    node.rotation.x = THREE.MathUtils.damp(node.rotation.x, targetX, 5, delta);
   });
 
   return (
     <group ref={group}>
-      <mesh position={[0, 0, -0.045]}>
-        <boxGeometry args={[1.64, 2.04, 0.08]} />
-        <meshStandardMaterial color="#ddd2bf" roughness={0.95} />
+      <mesh position={[0, 0, -0.04]}>
+        <boxGeometry args={[1.62, 2.02, 0.06]} />
+        <meshBasicMaterial color="#ebe3d6" />
       </mesh>
       <mesh position={[0, 0, 0.002]}>
         <planeGeometry args={[1.6, 2]} />

@@ -93,10 +93,6 @@ export default async function HomePage() {
           </div>
 
           <div className="relative">
-            <span className="absolute -left-7 top-0 hidden origin-top-left rotate-180 text-[10px] font-semibold uppercase tracking-[0.3em] text-muted [writing-mode:vertical-rl] lg:block">
-              Katalog {new Date().getFullYear()}
-            </span>
-
             <div className="tk-hero-media relative aspect-[4/5] overflow-hidden bg-paper-deep">
               {heroImage ? (
                 <Product3D

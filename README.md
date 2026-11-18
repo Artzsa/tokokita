@@ -47,7 +47,7 @@ Ganti keduanya sebelum toko dipakai sungguhan.
 ## Catatan penting
 
 - `npm run db:seed` **menghapus semua data** lalu mengisi ulang. Jangan dijalankan saat ada pesanan nyata.
-- Foto produk saat ini ilustrasi SVG abstrak, bukan foto asli. Upload foto asli lewat panel admin; hasilnya masuk ke `public/uploads/products/`.
+- Foto produk saat ini foto stok dari [Openverse](https://openverse.org/) (lisensi CC0/public domain), bukan foto barang yang sebenarnya. Dipakai supaya bentuk produk bisa dibayangkan saat tekstur 3D diputar. Upload foto asli lewat panel admin; hasilnya masuk ke `public/uploads/products/`. Sumber tiap foto dicatat di bawah.
 - Database SQLite ada di `prisma/dev.db` dan sengaja tidak ikut version control. Isi ulang dengan `db:push` + `db:seed`.
 - `.env` berisi `AUTH_SECRET` placeholder. Isi dengan string acak panjang sebelum online.
 - Saat domain sudah tersedia, set `NEXT_PUBLIC_SITE_URL` di `.env` supaya metadata/Open Graph memakai URL yang benar.
@@ -57,10 +57,25 @@ Ganti keduanya sebelum toko dipakai sungguhan.
 
 ```
 prisma/schema.prisma       model data (Admin, Product, Order, dll.)
-prisma/seed.ts             data dummy + generator SVG
+prisma/seed.ts             data dummy (memakai foto di public/uploads/seed/)
 src/app/(toko)/            halaman toko (route group)
 src/app/admin/             panel admin + login
 src/components/            komponen UI
 src/lib/actions/           server actions
 src/lib/{auth,cart,db,store,format}.ts
 ```
+
+## Kredit foto dummy
+
+Foto di `public/uploads/seed/` diambil lewat API Openverse dan semuanya berlisensi **CC0 / Public Domain Mark**, jadi tidak memerlukan atribusi. Sumbernya dicatat di sini supaya mudah ditukai:
+
+| File | Sumber |
+| --- | --- |
+| `gelas-tembakau.jpg` | https://pd.w.org/2026/03/54769c7e74fb7c7e2.04937297-1536x2048.jpeg |
+| `nampan-kayu-jati.jpg` | https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvaW1hZ2Uvd2Vic2l0ZS8yMDIyLTA0L2xyL3B4MTI1NTk0NC1pbWFnZS1rd3Z5Mmllcy5qcGc.jpg |
+| `tas-kanvas-lipat.jpg` | https://live.staticflickr.com/65535/53595381936_e8880666bc_b.jpg |
+| `sarung-bantal-linen.jpg` | https://live.staticflickr.com/65535/53902936080_78f7fb3d2f_b.jpg |
+| `lampu-meja-kaleng.jpg` | https://live.staticflickr.com/1747/42381074432_33733f4667_b.jpg |
+| `buku-catatan-jahit.jpg` | https://live.staticflickr.com/1891/44122997821_21b3dd5159_b.jpg |
+| `kotak-rempah-rotan.jpg` | https://live.staticflickr.com/65535/51372253640_9655263456_b.jpg |
+| `dompet-kulit-sisa.jpg` | https://pd.w.org/2026/06/2036a1d3e54bbbc40.82155933-2048x1536.jpg |
