@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export function Reveal({
   children,
@@ -12,21 +12,22 @@ export function Reveal({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
 
+    const show = () => node.classList.add("is-visible");
+
     if (typeof IntersectionObserver === "undefined") {
-      setVisible(true);
+      show();
       return;
     }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setVisible(true);
+          show();
           observer.disconnect();
         }
       },
@@ -40,7 +41,7 @@ export function Reveal({
   return (
     <div
       ref={ref}
-      className={`tk-reveal ${visible ? "is-visible" : ""} ${className ?? ""}`.trim()}
+      className={`tk-reveal ${className ?? ""}`.trim()}
       style={{ "--tk-delay": `${delay}ms` } as React.CSSProperties}
     >
       {children}

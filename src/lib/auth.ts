@@ -56,7 +56,7 @@ export async function getAdmin() {
   const parts = raw.split(".");
   if (parts.length !== 3) return null;
 
-  const [adminId, expiresAt, signature] = parts;
+  const [adminId, expiresAt] = parts;
   if (!safeEqual(`${adminId}.${expiresAt}.${sign(`${adminId}.${expiresAt}`)}`, raw)) {
     return null;
   }
