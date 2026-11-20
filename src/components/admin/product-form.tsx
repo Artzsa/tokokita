@@ -113,7 +113,10 @@ export function ProductForm({
     {},
   );
   const errors = state.errors ?? {};
+  const values = state.values ?? {};
   const editing = Boolean(initial);
+  const val = (key: string, fallback?: string | number | null) =>
+    values[key] ?? fallback?.toString() ?? "";
 
   const variantText = initial?.variants
     .map((variant) =>
@@ -127,7 +130,7 @@ export function ProductForm({
     .join("\n");
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form key={state.nonce ?? 0} action={formAction} className="space-y-6">
       {initial ? <input type="hidden" name="id" value={initial.id} /> : null}
 
       {state.error ? (
@@ -150,13 +153,13 @@ export function ProductForm({
               <Field
                 name="name"
                 label="Nama produk"
-                defaultValue={initial?.name}
+                defaultValue={val("name", initial?.name)}
                 error={errors.name}
               />
               <Field
                 name="slug"
                 label="Slug URL"
-                defaultValue={initial?.slug}
+                defaultValue={val("slug", initial?.slug)}
                 placeholder="otomatis dari nama"
                 hint="Kosongkan untuk dibuat otomatis."
                 error={errors.slug}
@@ -169,7 +172,7 @@ export function ProductForm({
                 <select
                   id="categoryId"
                   name="categoryId"
-                  defaultValue={initial?.categoryId ?? ""}
+                  defaultValue={val("categoryId", initial?.categoryId ?? "")}
                   className="input"
                 >
                   <option value="">Pilih kategori…</option>
@@ -191,7 +194,7 @@ export function ProductForm({
                 <select
                   id="status"
                   name="status"
-                  defaultValue={initial?.status ?? "draft"}
+                  defaultValue={val("status", initial?.status ?? "draft")}
                   className="input"
                 >
                   <option value="draft">Draf — tidak tampil</option>
@@ -207,7 +210,7 @@ export function ProductForm({
                 <Field
                   name="tagline"
                   label="Ringkasan satu baris"
-                  defaultValue={initial?.tagline}
+                  defaultValue={val("tagline", initial?.tagline)}
                   placeholder="Gelas stoneware 220 ml dengan bibir tebal."
                   error={errors.tagline}
                 />
@@ -221,7 +224,7 @@ export function ProductForm({
                   id="description"
                   name="description"
                   rows={6}
-                  defaultValue={initial?.description}
+                  defaultValue={val("description", initial?.description)}
                   placeholder="Bahan, cara buat, dan untuk apa barang ini dipakai."
                   aria-invalid={errors.description ? true : undefined}
                   className="input"
@@ -242,7 +245,7 @@ export function ProductForm({
                 name="price"
                 label="Harga (Rp)"
                 inputMode="numeric"
-                defaultValue={initial?.price ?? ""}
+                defaultValue={val("price", initial?.price ?? "")}
                 placeholder="145000"
                 error={errors.price}
               />
@@ -250,7 +253,7 @@ export function ProductForm({
                 name="compareAt"
                 label="Harga sebelum diskon"
                 inputMode="numeric"
-                defaultValue={initial?.compareAt ?? ""}
+                defaultValue={val("compareAt", initial?.compareAt ?? "")}
                 placeholder="opsional"
                 hint="Harus lebih tinggi dari harga jual."
               />
@@ -258,7 +261,7 @@ export function ProductForm({
                 name="stock"
                 label="Stok"
                 inputMode="numeric"
-                defaultValue={initial?.stock ?? 0}
+                defaultValue={val("stock", initial?.stock ?? 0)}
                 error={errors.stock}
               />
             </div>
@@ -277,25 +280,25 @@ export function ProductForm({
               <Field
                 name="material"
                 label="Bahan"
-                defaultValue={initial?.material ?? ""}
+                defaultValue={val("material", initial?.material ?? "")}
                 placeholder="Stoneware lokal, glasir bebas timbal"
               />
               <Field
                 name="dimensions"
                 label="Ukuran"
-                defaultValue={initial?.dimensions ?? ""}
+                defaultValue={val("dimensions", initial?.dimensions ?? "")}
                 placeholder="Diameter 8 cm, tinggi 9 cm"
               />
               <Field
                 name="care"
                 label="Perawatan"
-                defaultValue={initial?.care ?? ""}
+                defaultValue={val("care", initial?.care ?? "")}
                 placeholder="Boleh dicuci mesin…"
               />
               <Field
                 name="origin"
                 label="Asal"
-                defaultValue={initial?.origin ?? ""}
+                defaultValue={val("origin", initial?.origin ?? "")}
                 placeholder="Kasongan, Yogyakarta"
               />
             </div>
@@ -314,7 +317,7 @@ export function ProductForm({
               id="variants"
               name="variants"
               rows={4}
-              defaultValue={variantText}
+              defaultValue={val("variants", variantText)}
               placeholder={"Natural | TAS-NAT | 320000 | 5\nArang | TAS-ARG | | 4"}
               className="input mt-3 font-mono text-[12px]"
             />

@@ -30,9 +30,11 @@ export function CategoryForm() {
     createCategoryAction,
     {},
   );
+  const values = state.values ?? {};
+  const val = (key: string) => values[key] ?? "";
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form key={state.nonce ?? 0} action={formAction} className="space-y-5">
       {state.error ? (
         <p
           role="alert"
@@ -57,6 +59,7 @@ export function CategoryForm() {
           name="name"
           required
           placeholder="Rumah"
+          defaultValue={val("name")}
           className="input"
         />
       </div>
@@ -69,6 +72,7 @@ export function CategoryForm() {
           id="slug"
           name="slug"
           placeholder="otomatis dari nama"
+          defaultValue={val("slug")}
           className="input"
         />
       </div>
@@ -82,6 +86,7 @@ export function CategoryForm() {
           name="blurb"
           rows={3}
           placeholder="Satu kalimat tentang isi kategori ini."
+          defaultValue={val("blurb")}
           className="input"
         />
       </div>

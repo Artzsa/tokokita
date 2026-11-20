@@ -11,11 +11,15 @@ import { orderStatuses, slugify } from "@/lib/format";
 export type ProductFormState = {
   error?: string;
   errors?: Record<string, string>;
+  values?: Record<string, string>;
+  nonce?: number;
 };
 
 export type CategoryFormState = {
   error?: string;
   ok?: boolean;
+  values?: Record<string, string>;
+  nonce?: number;
 };
 
 const productStatuses = ["draft", "active", "archived"] as const;
@@ -29,6 +33,29 @@ const imageExtensions: Record<string, string> = {
 
 function text(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
+}
+
+function productValues(formData: FormData) {
+  const keys = [
+    "id",
+    "name",
+    "slug",
+    "categoryId",
+    "status",
+    "tagline",
+    "description",
+    "price",
+    "compareAt",
+    "stock",
+    "material",
+    "dimensions",
+    "care",
+    "origin",
+    "variants",
+  ];
+  const values: Record<string, string> = {};
+  for (const key of keys) values[key] = text(formData, key);
+  return values;
 }
 
 function toInt(value: string) {
@@ -125,6 +152,13 @@ export async function saveProductAction(
   const care = text(formData, "care");
   const origin = text(formData, "origin");
   const variantsRaw = text(formData, "variants");
+  const values = productValues(formData);
+  const retry = (error: string, errors?: Record<string, string>): ProductFormState => ({
+    error,
+    errors,
+    values,
+    nonce: Date.now(),
+  });
 
   const errors: Record<string, string> = {};
 
@@ -139,11 +173,11 @@ export async function saveProductAction(
   }
 
   if (Object.keys(errors).length > 0) {
-    return { error: "Periksa kembali kolom yang ditandai.", errors };
+    return retry("Periksa kembali kolom yang ditandai.", errors);
   }
 
   const category = await prisma.category.findUnique({ where: { id: categoryId } });
-  if (!category) return { error: "Kategori tidak ditemukan. Muat ulang halaman." };
+  if (!category) return retry("Kategori tidak ditemukan. Muat ulang halaman.");
 
   const slug = await uniqueSlug(slugInput || name, id || undefined);
   const variants = parseVariants(variantsRaw, slug);
@@ -153,9 +187,7 @@ export async function saveProductAction(
   try {
     imageUrl = await saveImage(imageFile instanceof File ? imageFile : null, slug);
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : "Foto gagal diunggah.",
-    };
+    return retry(error instanceof Error ? error.message : "Foto gagal diunggah.");
   }
 
   const payload = {
@@ -236,9 +268,9 @@ export async function saveProductAction(
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     if (message.includes("Unique constraint")) {
-      return { error: "SKU varian sudah dipakai produk lain. Ganti SKU-nya." };
+      return retry("SKU varian sudah dipakai produk lain. Ganti SKU-nya.");
     }
-    return { error: "Produk gagal disimpan. Coba lagi." };
+    return retry("Produk gagal disimpan. Coba lagi.");
   }
 
   revalidatePath("/");
@@ -270,14 +302,20 @@ export async function createCategoryAction(
   const name = text(formData, "name");
   const blurb = text(formData, "blurb");
   const slugInput = text(formData, "slug");
+  const values = { name, slug: slugInput, blurb };
+  const retry = (error: string): CategoryFormState => ({
+    error,
+    values,
+    nonce: Date.now(),
+  });
 
-  if (name.length < 2) return { error: "Nama kategori minimal 2 karakter." };
+  if (name.length < 2) return retry("Nama kategori minimal 2 karakter.");
 
   const slug = slugify(slugInput || name);
-  if (!slug) return { error: "Slug kategori tidak valid." };
+  if (!slug) return retry("Slug kategori tidak valid.");
 
   const clash = await prisma.category.findUnique({ where: { slug } });
-  if (clash) return { error: "Slug kategori sudah dipakai." };
+  if (clash) return retry("Slug kategori sudah dipakai.");
 
   const position = await prisma.category.count();
 
