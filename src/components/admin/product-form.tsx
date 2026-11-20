@@ -183,6 +183,8 @@ export function ProductForm({
                   id="categoryId"
                   name="categoryId"
                   defaultValue={val("categoryId", initial?.categoryId ?? "")}
+                  aria-invalid={errors.categoryId ? true : undefined}
+                  aria-describedby={errors.categoryId ? "categoryId-error" : undefined}
                   className="input"
                 >
                   <option value="">Pilih kategori…</option>
@@ -193,7 +195,9 @@ export function ProductForm({
                   ))}
                 </select>
                 {errors.categoryId ? (
-                  <p className="field-error">{errors.categoryId}</p>
+                  <p id="categoryId-error" className="field-error">
+                    {errors.categoryId}
+                  </p>
                 ) : null}
               </div>
 
@@ -205,6 +209,8 @@ export function ProductForm({
                   id="status"
                   name="status"
                   defaultValue={val("status", initial?.status ?? "draft")}
+                  aria-invalid={errors.status ? true : undefined}
+                  aria-describedby={errors.status ? "status-error" : undefined}
                   className="input"
                 >
                   <option value="draft">Draf — tidak tampil</option>
@@ -212,7 +218,9 @@ export function ProductForm({
                   <option value="archived">Arsip — disembunyikan</option>
                 </select>
                 {errors.status ? (
-                  <p className="field-error">{errors.status}</p>
+                  <p id="status-error" className="field-error">
+                    {errors.status}
+                  </p>
                 ) : null}
               </div>
 
@@ -327,6 +335,7 @@ export function ProductForm({
             <textarea
               id="variants"
               name="variants"
+              aria-label="Varian produk"
               rows={4}
               defaultValue={val("variants", variantText)}
               placeholder={"Natural | TAS-NAT | 320000 | 5\nArang | TAS-ARG | | 4"}
