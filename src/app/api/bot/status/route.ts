@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { getAdmin } from "@/lib/auth";
 import { getSetting } from "@/lib/settings";
 
@@ -28,6 +29,9 @@ export async function GET() {
   return Response.json({
     status: status || "offline",
     hasQr: Boolean(qr),
+    qrVersion: qr
+      ? createHash("sha1").update(qr).digest("hex").slice(0, 8)
+      : "",
     pairingCode,
     running: isAlive(Number(pid)),
     method: method || "qr",

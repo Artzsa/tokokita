@@ -6,6 +6,7 @@ import { Loader2, RefreshCw, ScanLine, Square, Play, KeyRound } from "lucide-rea
 type BotStatus = {
   status: string;
   hasQr: boolean;
+  qrVersion: string;
   pairingCode: string;
   running: boolean;
   method: string;
@@ -161,7 +162,7 @@ export function BotConnectPanel() {
           <p className="text-[12px] font-medium">Scan QR dari HP Anda</p>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            key={data?.status}
+            key={data?.qrVersion}
             src="/api/bot/qr"
             alt="QR code WhatsApp"
             className="size-56 bg-white p-2"
