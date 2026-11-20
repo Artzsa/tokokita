@@ -157,7 +157,7 @@ export default async function AdminDashboardPage({
                 {item.count}
               </p>
               <p className="mt-3 flex items-center gap-1 text-[11px] text-muted group-hover:text-ink">
-                Buka daftar
+                Buka
                 <ArrowUpRight size={12} />
               </p>
             </Link>
@@ -226,18 +226,26 @@ export default async function AdminDashboardPage({
                 return (
                   <li
                     key={category.name}
-                    className="grid grid-cols-[1fr_auto_auto] items-center gap-4 border-t border-line py-4 text-[13px]"
+                    className="border-t border-line py-4 text-[13px]"
                   >
-                    <span className="truncate">{category.name}</span>
-                    <span className="tabular-nums text-muted">
-                      {category.qty} unit
-                    </span>
-                    <span className="tabular-nums font-medium">
-                      {formatIDR(category.revenue)}
-                      <span className="ml-2 text-[10px] text-muted">
-                        {share}%
+                    <div className="grid grid-cols-[1fr_auto_auto] items-center gap-4">
+                      <span className="truncate">{category.name}</span>
+                      <span className="tabular-nums text-muted">
+                        {category.qty} unit
                       </span>
-                    </span>
+                      <span className="tabular-nums font-medium">
+                        {formatIDR(category.revenue)}
+                        <span className="ml-2 text-[10px] text-muted">
+                          {share}%
+                        </span>
+                      </span>
+                    </div>
+                    <div className="mt-3 h-1 bg-paper-deep">
+                      <div
+                        className="h-full bg-clay"
+                        style={{ width: `${Math.max(share, 2)}%` }}
+                      />
+                    </div>
                   </li>
                 );
               })}
