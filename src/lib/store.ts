@@ -7,7 +7,7 @@ export const store = {
   city: "Yogyakarta",
   address: "Jalan Suryodiningratan 18, Yogyakarta 55141",
   email: "halo@tokokita.test",
-  whatsapp: "6281234567890",
+  whatsapp: "6283822144337",
   instagram: "@tokokita.studio",
   hours: "Senin–Sabtu, 09.00–17.00 WIB",
   freeShippingThreshold: 500_000,
