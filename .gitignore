@@ -44,3 +44,6 @@ next-env.d.ts
 # lokal SQLite (bisa dibuat ulang lewat npm run db:push && npm run db:seed)
 prisma/*.db
 prisma/*.db-journal
+
+# sesi login WhatsApp bot (JANGAN di-commit)
+bot/session/

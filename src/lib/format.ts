@@ -31,6 +31,7 @@ export const orderStatuses = [
   "paid",
   "packed",
   "shipped",
+  "completed",
   "cancelled",
 ] as const;
 
@@ -41,6 +42,7 @@ export const orderStatusLabels: Record<string, string> = {
   paid: "Sudah dibayar",
   packed: "Dikemas",
   shipped: "Dikirim",
+  completed: "Selesai",
   cancelled: "Dibatalkan",
 };
 

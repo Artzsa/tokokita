@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { orderStatuses, slugify } from "@/lib/format";
+import { applyStatusChange } from "@/lib/order-status";
 
 export type ProductFormState = {
   error?: string;
@@ -333,14 +334,16 @@ export async function updateOrderStatusAction(formData: FormData) {
   await requireAdmin();
   const id = text(formData, "id");
   const status = text(formData, "status");
+  const cancelReason = text(formData, "cancelReason");
 
   if (!id) return;
   if (!orderStatuses.includes(status as (typeof orderStatuses)[number])) return;
 
-  await prisma.order.update({
-    where: { id },
-    data: { status },
-  });
+  const result = await applyStatusChange(id, status, cancelReason || undefined);
+
+  if (result.reason === "reason-required") {
+    redirect(`/admin/pesanan/${id}?error=reason`);
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/pesanan");

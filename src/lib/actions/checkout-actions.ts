@@ -5,6 +5,7 @@ import { z } from "zod";
 import { clearStoredCart, getCart } from "@/lib/cart";
 import { prisma } from "@/lib/db";
 import { orderNumber } from "@/lib/format";
+import { enqueueStatusNotification } from "@/lib/outbox";
 import { shippingFor } from "@/lib/store";
 
 export type CheckoutState = {
@@ -85,6 +86,7 @@ export async function placeOrderAction(
   }
 
   let createdNumber = "";
+  let createdId = "";
 
   try {
     const order = await prisma.$transaction(async (tx) => {
@@ -154,6 +156,7 @@ export async function placeOrderAction(
     });
 
     createdNumber = order.number;
+    createdId = order.id;
   } catch (error) {
     return {
       error:
@@ -163,6 +166,8 @@ export async function placeOrderAction(
       values: raw,
     };
   }
+
+  await enqueueStatusNotification(createdId, "pending").catch(() => null);
 
   await clearStoredCart();
   redirect(`/pesanan/${createdNumber}`);

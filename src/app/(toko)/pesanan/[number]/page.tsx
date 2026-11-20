@@ -16,6 +16,7 @@ const statusTone: Record<string, string> = {
   paid: "border-moss/40 bg-moss/5 text-moss",
   packed: "border-moss/40 bg-moss/5 text-moss",
   shipped: "border-moss/40 bg-moss/5 text-moss",
+  completed: "border-moss/40 bg-moss/5 text-moss",
   cancelled: "border-line bg-paper-deep text-muted",
 };
 
@@ -201,6 +202,11 @@ export default async function OrderPage({
                 . Kalau ada yang ingin diubah, hubungi kami dengan menyebut nomor
                 pesanan di atas.
               </p>
+              {order.cancelReason ? (
+                <p className="mt-3 text-[13px] leading-relaxed text-muted">
+                  Alasan: {order.cancelReason}
+                </p>
+              ) : null}
             </section>
           )}
         </div>

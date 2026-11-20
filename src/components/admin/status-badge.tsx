@@ -3,6 +3,7 @@ const tones: Record<string, string> = {
   paid: "border-moss/40 bg-moss/5 text-moss",
   packed: "border-moss/40 bg-moss/5 text-moss",
   shipped: "border-ink/20 bg-ink/5 text-ink",
+  completed: "border-moss/40 bg-moss/10 text-moss",
   cancelled: "border-line bg-paper-deep text-muted",
 };
 
@@ -21,7 +22,9 @@ export function StatusBadge({ status }: { status: string }) {
             ? "Dikemas"
             : status === "shipped"
               ? "Dikirim"
-              : status === "cancelled"
+              : status === "completed"
+                ? "Selesai"
+                : status === "cancelled"
                 ? "Dibatalkan"
                 : status}
     </span>

@@ -89,11 +89,27 @@ model Order {
   subtotal      Int
   total         Int
   status        String      @default("pending")
+  cancelReason  String?
   items         OrderItem[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
   @@index([status])
+}
+
+model NotificationOutbox {
+  id        String    @id @default(cuid())
+  orderId   String
+  phone     String
+  message   String
+  state     String    @default("pending")
+  attempts  Int       @default(0)
+  lastError String?
+  createdAt DateTime  @default(now())
+  sentAt    DateTime?
+
+  @@index([state])
+  @@index([orderId])
 }
 
 model OrderItem {

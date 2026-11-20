@@ -17,11 +17,14 @@ export const metadata: Metadata = { title: "Detail pesanan" };
 
 export default async function AdminOrderDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   await requireAdmin();
   const { id } = await params;
+  const { error } = await searchParams;
 
   const order = await prisma.order.findUnique({
     where: { id },
@@ -134,6 +137,17 @@ export default async function AdminOrderDetailPage({
             </p>
           </section>
 
+          {order.cancelReason ? (
+            <section>
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+                Alasan pembatalan
+              </h2>
+              <p className="mt-3 border-t border-line pt-4 text-[13px] leading-relaxed text-clay-deep">
+                {order.cancelReason}
+              </p>
+            </section>
+          ) : null}
+
           <section>
             <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
               Alamat pengiriman
@@ -153,6 +167,14 @@ export default async function AdminOrderDetailPage({
             <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
               Ubah status
             </h2>
+            {error === "reason" ? (
+              <p
+                role="alert"
+                className="mt-3 border border-clay/30 bg-clay/5 px-3 py-2 text-[12px] text-clay-deep"
+              >
+                Isi alasan pembatalan dulu sebelum menyimpan status Dibatalkan.
+              </p>
+            ) : null}
             <form action={updateOrderStatusAction} className="mt-4 space-y-3">
               <input type="hidden" name="id" value={order.id} />
               <label htmlFor="status" className="sr-only">
@@ -171,6 +193,17 @@ export default async function AdminOrderDetailPage({
                   </option>
                 ))}
               </select>
+              <label htmlFor="cancelReason" className="label">
+                Alasan pembatalan
+              </label>
+              <textarea
+                id="cancelReason"
+                name="cancelReason"
+                rows={3}
+                defaultValue={order.cancelReason ?? ""}
+                placeholder="Wajib diisi jika status diubah menjadi Dibatalkan."
+                className="input"
+              />
               <button type="submit" className="btn btn-solid w-full">
                 Simpan status
               </button>
