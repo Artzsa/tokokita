@@ -1,4 +1,5 @@
 import { Boom } from "@hapi/boom";
+import QRCode from "qrcode";
 import makeWASocket, {
   Browsers,
   DisconnectReason,
@@ -47,7 +48,6 @@ export async function connect(): Promise<WASocket | null> {
   const sock = makeWASocket({
     auth: state,
     browser: Browsers.ubuntu("Toko Kita Bot"),
-    printQRInTerminal: config.loginMethod === "qr",
     markOnlineOnConnect: false,
   });
   currentSocket = sock;
@@ -57,7 +57,15 @@ export async function connect(): Promise<WASocket | null> {
   let pairingRequested = false;
 
   sock.ev.on("connection.update", async ({ connection, lastDisconnect, qr }) => {
-    if (qr) console.log("[bot] Scan QR ini lewat WhatsApp → Perangkat tertaut.");
+    if (qr && config.loginMethod === "qr") {
+      try {
+        const ascii = await QRCode.toString(qr, { type: "terminal", small: true });
+        console.log("\n[bot] Scan QR ini lewat WhatsApp → Perangkat tertaut:\n");
+        console.log(ascii);
+      } catch (error) {
+        console.error("[bot] Gagal membuat QR:", error);
+      }
+    }
 
     if (
       connection === "connecting" &&
