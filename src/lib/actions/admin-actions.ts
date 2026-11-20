@@ -1,6 +1,6 @@
 "use server";
 
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -104,6 +104,14 @@ async function saveImage(file: File | null, slug: string) {
   return `/uploads/products/${filename}`;
 }
 
+async function removeUploadedImage(url: string | null | undefined) {
+  if (!url || !url.startsWith("/uploads/products/")) return;
+  const relative = url.replace(/^\/uploads\/products\//, "");
+  if (!relative || relative.includes("..") || relative.includes("/")) return;
+  const filePath = path.join(process.cwd(), "public", "uploads", "products", relative);
+  await unlink(filePath).catch(() => null);
+}
+
 function parseVariants(raw: string, productSlug: string) {
   const lines = raw
     .split(/\r?\n/)
@@ -169,6 +177,9 @@ export async function saveProductAction(
   if (description.length < 20)
     errors.description = "Deskripsi minimal 20 karakter — jelaskan bahan dan pemakaiannya.";
   if (price <= 0) errors.price = "Harga harus lebih dari 0.";
+  if (compareAtRaw && (!compareAt || compareAt <= price)) {
+    errors.compareAt = "Harga sebelum diskon harus lebih tinggi dari harga jual.";
+  }
   if (!productStatuses.includes(status as (typeof productStatuses)[number])) {
     errors.status = "Status produk tidak dikenal.";
   }
@@ -217,10 +228,15 @@ export async function saveProductAction(
         await tx.product.update({ where: { id }, data: payload });
 
         if (imageUrl) {
+          const oldImages = await tx.productImage.findMany({
+            where: { productId: id },
+            select: { url: true },
+          });
           await tx.productImage.deleteMany({ where: { productId: id } });
           await tx.productImage.create({
             data: { productId: id, url: imageUrl, alt: name, position: 0 },
           });
+          for (const image of oldImages) await removeUploadedImage(image.url);
         }
 
         const keptSkus = variants.map((variant) => variant.sku);
@@ -287,7 +303,12 @@ export async function deleteProductAction(formData: FormData) {
   const id = text(formData, "id");
   if (!id) return;
 
+  const images = await prisma.productImage.findMany({
+    where: { productId: id },
+    select: { url: true },
+  });
   await prisma.product.delete({ where: { id } }).catch(() => null);
+  for (const image of images) await removeUploadedImage(image.url);
 
   revalidatePath("/");
   revalidatePath("/produk");

@@ -266,6 +266,7 @@ export function ProductForm({
                 defaultValue={val("compareAt", initial?.compareAt ?? "")}
                 placeholder="opsional"
                 hint="Harus lebih tinggi dari harga jual."
+                error={errors.compareAt}
               />
               <Field
                 name="stock"
