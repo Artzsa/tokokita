@@ -58,10 +58,11 @@ Ganti keduanya sebelum toko dipakai sungguhan.
 
 ## Bot WhatsApp & notifikasi
 
-Jalankan dua terminal:
+Koneksi WhatsApp bisa dilakukan **langsung dari web** di **Admin → Pengaturan → Koneksi WhatsApp**: tombol *Jalankan bot*, *Hentikan*, *Minta kode pairing*, dan QR tampil otomatis di halaman. Bot tetap berjalan sebagai proses background terpisah.
+
+Kalau perlu menjalankan manual dari terminal:
 
 ```bash
-npm run dev   # web
 npm run bot   # WA + worker outbox
 ```
 

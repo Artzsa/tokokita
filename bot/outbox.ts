@@ -1,9 +1,38 @@
 import { prisma } from "../src/lib/db";
 import { cancelExpiredPendingOrders } from "../src/lib/order-status";
+import { getSetting, setSetting } from "../src/lib/settings";
 import { config, maskPhone, refreshConfig } from "./config";
 import { getSocket } from "./login";
 
 let processing = false;
+
+async function handleBotCommand() {
+  const command = await getSetting("bot_command");
+  if (command !== "pairing") return;
+
+  const socket = getSocket();
+  if (!socket || config.dryRun) return;
+
+  const attempts = Number(await getSetting("bot_pairing_attempts")) || 0;
+  if (attempts >= 10) {
+    await setSetting("bot_command", "");
+    await setSetting("bot_pairing_attempts", "0");
+    return;
+  }
+
+  try {
+    const code = await socket.requestPairingCode(config.pairNumber);
+    await setSetting("bot_pairing_code", code);
+    await setSetting("bot_status", "waiting_pair");
+    await setSetting("bot_command", "");
+    await setSetting("bot_pairing_attempts", "0");
+    console.log(`[bot] Kode pairing: ${code}`);
+  } catch (error) {
+    await setSetting("bot_pairing_attempts", String(attempts + 1));
+    const message = error instanceof Error ? error.message : "Gagal minta kode";
+    console.error("[bot] Gagal minta kode pairing:", message);
+  }
+}
 
 export async function processOutbox() {
   if (processing) return;
@@ -11,6 +40,7 @@ export async function processOutbox() {
 
   try {
     await refreshConfig();
+    await handleBotCommand();
     if (!config.notificationsEnabled) return;
 
     const pending = await prisma.notificationOutbox.findMany({

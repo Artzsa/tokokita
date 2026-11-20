@@ -6,6 +6,7 @@ import makeWASocket, {
   useMultiFileAuthState as loadAuthState,
   type WASocket,
 } from "@whiskeysockets/baileys";
+import { setSetting } from "../src/lib/settings";
 import { config } from "./config";
 
 let currentSocket: WASocket | null = null;
@@ -58,6 +59,8 @@ export async function connect(): Promise<WASocket | null> {
 
   sock.ev.on("connection.update", async ({ connection, lastDisconnect, qr }) => {
     if (qr && config.loginMethod === "qr") {
+      await setSetting("bot_qr", qr);
+      await setSetting("bot_status", "waiting_scan");
       try {
         const ascii = await QRCode.toString(qr, { type: "terminal", small: true });
         console.log("\n[bot] Scan QR ini lewat WhatsApp → Perangkat tertaut:\n");
@@ -80,6 +83,9 @@ export async function connect(): Promise<WASocket | null> {
     }
 
     if (connection === "open") {
+      await setSetting("bot_status", "connected");
+      await setSetting("bot_qr", "");
+      await setSetting("bot_pairing_code", "");
       console.log("[bot] WhatsApp tersambung.");
       return;
     }
@@ -89,6 +95,8 @@ export async function connect(): Promise<WASocket | null> {
         ?.statusCode;
       const loggedOut = code === DisconnectReason.loggedOut;
       currentSocket = null;
+      await setSetting("bot_status", "disconnected");
+      await setSetting("bot_qr", "");
 
       if (loggedOut && state.creds.registered) {
         console.log("[bot] Sesi logout. Hapus folder session lalu scan lagi.");

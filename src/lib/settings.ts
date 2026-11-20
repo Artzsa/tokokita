@@ -32,6 +32,19 @@ function defaults(): Settings {
   };
 }
 
+export async function getSetting(key: string) {
+  const row = await prisma.setting.findUnique({ where: { key } });
+  return row?.value ?? "";
+}
+
+export async function setSetting(key: string, value: string) {
+  await prisma.setting.upsert({
+    where: { key },
+    create: { key, value },
+    update: { value },
+  });
+}
+
 export async function getSettings(): Promise<Settings> {
   const base = defaults();
   const rows = await prisma.setting.findMany();

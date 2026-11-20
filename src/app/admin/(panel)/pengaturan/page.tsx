@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BotConnectPanel } from "@/components/admin/bot-connect-panel";
 import { SettingsForm } from "@/components/admin/settings-form";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -49,7 +50,8 @@ export default async function SettingsPage() {
         ))}
       </dl>
 
-      <div className="mt-6 max-w-3xl">
+      <div className="mt-6 max-w-3xl space-y-6">
+        <BotConnectPanel />
         <SettingsForm initial={settings} />
       </div>
 
