@@ -188,7 +188,7 @@ export default async function HomePage() {
         <Reveal delay={120}>
           <div className="mt-10 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product, index) => (
-              <div key={product.id} className={index === 1 ? "lg:mt-14" : undefined}>
+              <div key={product.id} className={index === 1 ? "lg:mt-20" : undefined}>
                 <ProductCard product={product} preload={index === 0} />
               </div>
             ))}
