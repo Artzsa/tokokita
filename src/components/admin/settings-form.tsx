@@ -117,8 +117,8 @@ export function SettingsForm({ initial }: { initial: Settings }) {
               defaultValue={String(val("loginMethod", initial.loginMethod))}
               className="input"
             >
-              <option value="qr">QR code</option>
-              <option value="pairing">Pairing code</option>
+              <option value="qr">QR code (disarankan)</option>
+              <option value="pairing">Pairing code (eksperimental)</option>
             </select>
           </div>
           <div>
