@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LogOut,
   Package,
+  Settings,
   ShoppingCart,
   Tags,
 } from "lucide-react";
@@ -17,6 +18,7 @@ const items = [
   { href: "/admin/produk", label: "Produk", icon: Package },
   { href: "/admin/pesanan", label: "Pesanan", icon: ShoppingCart },
   { href: "/admin/kategori", label: "Kategori", icon: Tags },
+  { href: "/admin/pengaturan", label: "Pengaturan", icon: Settings },
 ];
 
 export function AdminNav({

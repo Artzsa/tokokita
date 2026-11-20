@@ -1,6 +1,6 @@
 import "dotenv/config";
 import type { WAMessage } from "@whiskeysockets/baileys";
-import { config, maskPhone, normalizePhone } from "./config";
+import { config, maskPhone, normalizePhone, refreshConfig } from "./config";
 import { answerFaq, helpMessage } from "./faq";
 import { connect, getSocket } from "./login";
 import { answerOrderLookup } from "./orders";
@@ -37,8 +37,23 @@ async function handleIncoming(message: WAMessage) {
   console.log(`[chat] dibalas ke ${maskPhone(sender)}`);
 }
 
+let outboxTimer: NodeJS.Timeout | null = null;
+let sweepTimer: NodeJS.Timeout | null = null;
+
+function scheduleOutbox() {
+  outboxTimer = setTimeout(async () => {
+    try {
+      await processOutbox();
+    } catch (error) {
+      console.error("[outbox] error:", error);
+    }
+    scheduleOutbox();
+  }, config.pollMs);
+}
+
 async function main() {
   console.log("[bot] Menjalankan Toko Kita WhatsApp bot...");
+  await refreshConfig();
   const socket = await connect();
 
   socket?.ev.on("messages.upsert", async ({ messages, type }) => {
@@ -53,10 +68,8 @@ async function main() {
   });
 
   await sweepExpiredOrders();
-  const outboxTimer = setInterval(() => {
-    processOutbox().catch((error) => console.error("[outbox] error:", error));
-  }, config.pollMs);
-  const sweepTimer = setInterval(() => {
+  scheduleOutbox();
+  sweepTimer = setInterval(() => {
     sweepExpiredOrders().catch((error) => console.error("[sweep] error:", error));
   }, config.sweepMs);
 
@@ -65,8 +78,8 @@ async function main() {
   );
 
   process.on("SIGINT", () => {
-    clearInterval(outboxTimer);
-    clearInterval(sweepTimer);
+    if (outboxTimer) clearTimeout(outboxTimer);
+    if (sweepTimer) clearInterval(sweepTimer);
     console.log("[bot] Berhenti.");
     process.exit(0);
   });

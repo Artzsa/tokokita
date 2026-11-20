@@ -1,6 +1,6 @@
 import { prisma } from "../src/lib/db";
 import { cancelExpiredPendingOrders } from "../src/lib/order-status";
-import { config, maskPhone } from "./config";
+import { config, maskPhone, refreshConfig } from "./config";
 import { getSocket } from "./login";
 
 let processing = false;
@@ -10,6 +10,9 @@ export async function processOutbox() {
   processing = true;
 
   try {
+    await refreshConfig();
+    if (!config.notificationsEnabled) return;
+
     const pending = await prisma.notificationOutbox.findMany({
       where: { state: "pending", attempts: { lt: config.maxAttempts } },
       orderBy: { createdAt: "asc" },

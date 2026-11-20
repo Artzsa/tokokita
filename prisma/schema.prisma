@@ -97,6 +97,11 @@ model Order {
   @@index([status])
 }
 
+model Setting {
+  key   String @id
+  value String
+}
+
 model NotificationOutbox {
   id        String    @id @default(cuid())
   orderId   String

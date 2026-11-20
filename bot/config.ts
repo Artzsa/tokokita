@@ -1,3 +1,6 @@
+import "dotenv/config";
+import { getSettings } from "../src/lib/settings";
+
 export function normalizePhone(value: string) {
   const digits = value.replace(/\D/g, "");
   if (digits.startsWith("0")) return `62${digits.slice(1)}`;
@@ -13,14 +16,29 @@ export function maskPhone(value: string) {
 
 export const config = {
   sessionDir: process.env.BOT_SESSION_DIR ?? "bot/session",
-  loginMethod: process.env.BOT_LOGIN_METHOD === "pairing" ? "pairing" : "qr",
-  pairNumber: process.env.BOT_PAIR_NUMBER ?? "",
-  allowedNumbers: (process.env.BOT_ALLOWED_NUMBERS ?? "")
+  sweepMs: Number(process.env.BOT_SWEEP_MS ?? 6 * 60 * 60 * 1000),
+  notificationsEnabled: true,
+  dryRun: true,
+  loginMethod: "qr" as "qr" | "pairing",
+  pairNumber: "",
+  allowedNumbersRaw: "",
+  allowedNumbers: [] as string[],
+  pollMs: 5000,
+  maxAttempts: 3,
+};
+
+export async function refreshConfig() {
+  const settings = await getSettings();
+  config.notificationsEnabled = settings.notificationsEnabled;
+  config.dryRun = settings.dryRun;
+  config.loginMethod = settings.loginMethod;
+  config.pairNumber = settings.pairNumber;
+  config.allowedNumbersRaw = settings.allowedNumbers;
+  config.allowedNumbers = settings.allowedNumbers
     .split(",")
     .map((value) => normalizePhone(value.trim()))
-    .filter(Boolean),
-  dryRun: process.env.BOT_DRY_RUN === "true",
-  pollMs: Number(process.env.BOT_POLL_MS ?? 5000),
-  maxAttempts: Number(process.env.BOT_MAX_ATTEMPTS ?? 3),
-  sweepMs: Number(process.env.BOT_SWEEP_MS ?? 6 * 60 * 60 * 1000),
-};
+    .filter(Boolean);
+  config.pollMs = settings.pollMs;
+  config.maxAttempts = settings.maxAttempts;
+  return config;
+}

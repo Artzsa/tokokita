@@ -65,7 +65,9 @@ npm run dev   # web
 npm run bot   # WA + worker outbox
 ```
 
-Sebelum pakai akun WA asli, set `BOT_DRY_RUN="true"` dulu — bot tidak menyambung WhatsApp, tapi tetap memproses outbox (pesan ditandai terkirim di database untuk uji alur).
+Semua pengaturan bot bisa diubah lewat **Admin → Pengaturan** (`/admin/pengaturan`) tanpa edit `.env` atau restart. Nilai tersimpan di tabel `Setting`; kalau belum ada, bot memakai nilai default dari `.env`.
+
+Sebelum pakai akun WA asli, set `BOT_DRY_RUN="true"` (atau aktifkan mode uji lewat halaman Pengaturan) dulu — bot tidak menyambung WhatsApp, tapi tetap memproses outbox (pesan ditandai terkirim di database untuk uji alur).
 
 Untuk pakai WA sungguhan:
 1. Set `BOT_DRY_RUN="false"`.
