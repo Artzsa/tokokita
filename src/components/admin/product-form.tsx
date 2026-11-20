@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Loader2 } from "lucide-react";
 import { formatIDR } from "@/lib/format";
@@ -117,6 +117,16 @@ export function ProductForm({
   const editing = Boolean(initial);
   const val = (key: string, fallback?: string | number | null) =>
     values[key] ?? fallback?.toString() ?? "";
+  const fileRef = useRef<HTMLInputElement>(null);
+  const pickedFile = useRef<File | null>(null);
+  const [fileName, setFileName] = useState("");
+
+  useEffect(() => {
+    if (!state.nonce || !pickedFile.current || !fileRef.current) return;
+    const transfer = new DataTransfer();
+    transfer.items.add(pickedFile.current);
+    fileRef.current.files = transfer.files;
+  }, [state.nonce]);
 
   const variantText = initial?.variants
     .map((variant) =>
@@ -349,12 +359,23 @@ export function ProductForm({
                 Unggah foto
               </label>
               <input
+                ref={fileRef}
                 id="image"
                 name="image"
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
+                onChange={(event) => {
+                  const file = event.target.files?.[0] ?? null;
+                  pickedFile.current = file;
+                  setFileName(file?.name ?? "");
+                }}
                 className="block w-full text-[12px] text-ink-soft file:mr-3 file:border file:border-line file:bg-paper-deep/60 file:px-3 file:py-2 file:text-[10px] file:font-semibold file:uppercase file:tracking-[0.1em] hover:file:border-ink"
               />
+              {fileName ? (
+                <p className="mt-1 text-[11px] font-medium text-moss">
+                  Foto dipilih: {fileName}
+                </p>
+              ) : null}
               <p className="mt-2 text-[11px] leading-relaxed text-muted">
                 JPG, PNG, WebP, AVIF, atau GIF. Maks 5 MB. Rasio 4:5 paling
                 rapi. {initial ? "Unggah baru untuk mengganti foto lama." : ""}
