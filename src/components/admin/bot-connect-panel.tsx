@@ -8,6 +8,7 @@ type BotStatus = {
   hasQr: boolean;
   qrVersion: string;
   pairingCode: string;
+  pairNumber: string;
   running: boolean;
   method: string;
   dryRun: boolean;
@@ -27,6 +28,7 @@ export function BotConnectPanel() {
   const [data, setData] = useState<BotStatus | null>(null);
   const [busy, setBusy] = useState("");
   const [message, setMessage] = useState("");
+  const localNumber = data?.pairNumber?.replace(/^62/, "") ?? "";
 
   const refresh = useCallback(async () => {
     try {
@@ -149,9 +151,11 @@ export function BotConnectPanel() {
           <p className="display mt-2 text-3xl tracking-[0.2em]">
             {data.pairingCode}
           </p>
-          <p className="mt-3 text-[11px] text-paper/60">
-            Di HP: WhatsApp → Perangkat tertaut → Tautkan dengan nomor telepon →
-            masukkan nomor & kode ini.
+          <p className="mt-3 text-[11px] leading-relaxed text-paper/60">
+            Di HP: WhatsApp → Perangkat tertaut → Tautkan perangkat → Tautkan
+            dengan nomor telepon. Pilih kode negara <strong>+62</strong>, lalu
+            ketik <strong className="font-mono text-paper">{localNumber}</strong>{" "}
+            (tanpa angka 62 di depan), setelah itu masukkan kode di atas.
           </p>
         </div>
       ) : null}

@@ -17,13 +17,14 @@ export async function GET() {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [status, qr, pairingCode, pid, method, dryRun] = await Promise.all([
+  const [status, qr, pairingCode, pid, method, dryRun, pairNumber] = await Promise.all([
     getSetting("bot_status"),
     getSetting("bot_qr"),
     getSetting("bot_pairing_code"),
     getSetting("bot_pid"),
     getSetting("loginMethod"),
     getSetting("dryRun"),
+    getSetting("pairNumber"),
   ]);
 
   return Response.json({
@@ -33,6 +34,7 @@ export async function GET() {
       ? createHash("sha1").update(qr).digest("hex").slice(0, 8)
       : "",
     pairingCode,
+    pairNumber,
     running: isAlive(Number(pid)),
     method: method || "qr",
     dryRun: dryRun === "true",
