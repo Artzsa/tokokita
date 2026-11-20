@@ -3,6 +3,7 @@ import QRCode from "qrcode";
 import makeWASocket, {
   Browsers,
   DisconnectReason,
+  fetchLatestBaileysVersion,
   useMultiFileAuthState as loadAuthState,
   type WASocket,
 } from "@whiskeysockets/baileys";
@@ -19,10 +20,23 @@ function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function getWhatsAppVersion(): Promise<[number, number, number]> {
+  try {
+    const { version } = await fetchLatestBaileysVersion();
+    if (version) return version;
+  } catch {
+    // pakai fallback di bawah
+  }
+  return [2, 3000, 1033893291];
+}
+
 async function requestPairingWithRetry(sock: WASocket, number: string) {
   for (let attempt = 1; attempt <= 5; attempt += 1) {
     try {
       const code = await sock.requestPairingCode(number);
+      await setSetting("bot_pairing_code", code);
+      await setSetting("bot_status", "waiting_pair");
+      await setSetting("bot_command", "");
       console.log(`[bot] Kode pairing: ${code}`);
       return;
     } catch (error) {
@@ -46,8 +60,10 @@ export async function connect(): Promise<WASocket | null> {
   }
 
   const { state, saveCreds } = await loadAuthState(config.sessionDir);
+  const version = await getWhatsAppVersion();
   const sock = makeWASocket({
     auth: state,
+    version,
     browser: Browsers.ubuntu("Toko Kita Bot"),
     markOnlineOnConnect: false,
   });
@@ -71,7 +87,7 @@ export async function connect(): Promise<WASocket | null> {
     }
 
     if (
-      connection === "connecting" &&
+      qr &&
       config.loginMethod === "pairing" &&
       !state.creds.registered &&
       config.pairNumber &&
