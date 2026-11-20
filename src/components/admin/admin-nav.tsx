@@ -31,18 +31,18 @@ export function AdminNav({
   const pathname = usePathname();
 
   return (
-    <aside className="flex flex-col border-b border-line bg-paper-deep/60 md:sticky md:top-0 md:h-screen md:border-b-0 md:border-r">
+    <aside className="flex flex-col border-b border-white/10 bg-ink text-paper md:sticky md:top-0 md:h-screen md:border-b-0 md:border-r md:border-white/10">
       <div className="flex items-baseline justify-between gap-4 px-5 pb-4 pt-6 md:block md:px-6">
         <div>
-          <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-muted">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-paper/50">
             Panel toko
           </p>
-          <p className="display mt-1 text-2xl">Toko Kita</p>
+          <p className="display mt-1 text-2xl text-paper">Toko Kita</p>
         </div>
         <Link
           href="/"
           target="_blank"
-          className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted hover:text-ink md:mt-4"
+          className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-paper/50 hover:text-paper md:mt-4"
         >
           Lihat toko
           <ExternalLink size={11} />
@@ -62,8 +62,8 @@ export function AdminNav({
               href={item.href}
               className={`flex shrink-0 items-center gap-3 rounded-hair px-3 py-2.5 text-[13px] transition-colors ${
                 active
-                  ? "bg-ink text-paper"
-                  : "text-ink-soft hover:bg-paper-deep hover:text-ink"
+                  ? "bg-clay text-paper"
+                  : "text-paper/70 hover:bg-white/5 hover:text-paper"
               }`}
             >
               <Icon size={16} strokeWidth={1.6} />
@@ -73,13 +73,13 @@ export function AdminNav({
         })}
       </nav>
 
-      <div className="mt-auto hidden border-t border-line p-6 md:block">
-        <p className="text-[13px] font-medium">{name}</p>
-        <p className="mt-0.5 truncate text-[11px] text-muted">{email}</p>
+      <div className="mt-auto hidden border-t border-white/10 p-6 md:block">
+        <p className="text-[13px] font-medium text-paper">{name}</p>
+        <p className="mt-0.5 truncate text-[11px] text-paper/50">{email}</p>
         <form action={logoutAction} className="mt-4">
           <button
             type="submit"
-            className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted transition-colors hover:text-clay"
+            className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-paper/50 transition-colors hover:text-clay"
           >
             <LogOut size={13} />
             Keluar
@@ -87,11 +87,11 @@ export function AdminNav({
         </form>
       </div>
 
-      <div className="flex border-t border-line px-5 py-3 md:hidden">
+      <div className="flex border-t border-white/10 px-5 py-3 md:hidden">
         <form action={logoutAction}>
           <button
             type="submit"
-            className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted"
+            className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-paper/50"
           >
             <LogOut size={13} />
             Keluar

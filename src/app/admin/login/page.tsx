@@ -17,7 +17,7 @@ export default async function LoginPage() {
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      <div className="flex flex-col justify-between bg-moss p-8 text-paper lg:p-16">
+      <div className="flex flex-col justify-between bg-ink p-8 text-paper lg:p-16">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-paper/60">
             Panel internal
