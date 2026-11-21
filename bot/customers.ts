@@ -1,5 +1,5 @@
 import { prisma } from "../src/lib/db";
-import { normalizePhone } from "./config";
+import { normalizePhone } from "../src/lib/phone";
 
 let cache: { phones: Set<string>; expiresAt: number } | null = null;
 

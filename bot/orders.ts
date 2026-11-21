@@ -1,6 +1,6 @@
 import { prisma } from "../src/lib/db";
 import { formatIDR, orderStatusLabel } from "../src/lib/format";
-import { normalizePhone } from "./config";
+import { normalizePhone } from "../src/lib/phone";
 
 const ORDER_PATTERN = /TK-\d{6}-[A-Z0-9]{4}/i;
 

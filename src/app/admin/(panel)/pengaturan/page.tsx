@@ -1,23 +1,52 @@
 import type { Metadata } from "next";
 import { BotConnectPanel } from "@/components/admin/bot-connect-panel";
+import { KnownCustomers } from "@/components/admin/known-customers";
 import { SettingsForm } from "@/components/admin/settings-form";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
+import { normalizePhone } from "@/lib/phone";
 
 export const metadata: Metadata = { title: "Pengaturan" };
 
 export default async function SettingsPage() {
   await requireAdmin();
-  const [settings, grouped] = await Promise.all([
+  const [settings, grouped, orders] = await Promise.all([
     getSettings(),
     prisma.notificationOutbox.groupBy({
       by: ["state"],
       _count: { _all: true },
     }),
+    prisma.order.findMany({
+      select: { phone: true, customerName: true, number: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    }),
   ]);
 
   const counts = new Map(grouped.map((row) => [row.state, row._count._all]));
+
+  const customerMap = new Map<
+    string,
+    { phone: string; name: string; count: number; latestOrder: string; latestAt: Date }
+  >();
+  for (const order of orders) {
+    const key = normalizePhone(order.phone);
+    const existing = customerMap.get(key);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      customerMap.set(key, {
+        phone: order.phone,
+        name: order.customerName,
+        count: 1,
+        latestOrder: order.number,
+        latestAt: order.createdAt,
+      });
+    }
+  }
+  const customers = [...customerMap.values()].sort(
+    (a, b) => b.latestAt.getTime() - a.latestAt.getTime(),
+  );
 
   const stats = [
     { label: "Menunggu kirim", value: counts.get("pending") ?? 0 },
@@ -52,6 +81,7 @@ export default async function SettingsPage() {
 
       <div className="mt-6 max-w-3xl space-y-6">
         <BotConnectPanel />
+        <KnownCustomers customers={customers} />
         <SettingsForm initial={settings} />
       </div>
 
