@@ -1,4 +1,5 @@
 import { Boom } from "@hapi/boom";
+import { rm } from "node:fs/promises";
 import QRCode from "qrcode";
 import makeWASocket, {
   Browsers,
@@ -11,6 +12,7 @@ import { setSetting } from "../src/lib/settings";
 import { config } from "./config";
 
 let currentSocket: WASocket | null = null;
+let reconnectCount = 0;
 
 export function getSocket() {
   return currentSocket;
@@ -100,6 +102,7 @@ export async function connect(): Promise<WASocket | null> {
     }
 
     if (connection === "open") {
+      reconnectCount = 0;
       await setSetting("bot_status", "connected");
       await setSetting("bot_qr", "");
       await setSetting("bot_pairing_code", "");
@@ -115,13 +118,23 @@ export async function connect(): Promise<WASocket | null> {
       await setSetting("bot_status", "disconnected");
       await setSetting("bot_qr", "");
 
-      if (loggedOut && state.creds.registered) {
-        console.log("[bot] Sesi logout. Hapus folder session lalu scan lagi.");
+      if (reconnectCount >= 5) {
+        console.log("[bot] Reconnect gagal berulang. Butuh tindakan manual.");
+        await setSetting("bot_status", "offline");
+        return;
+      }
+      reconnectCount += 1;
+
+      if (loggedOut) {
+        console.log("[bot] Sesi terputus/terlepas. Menghapus sesi lama lalu membuat QR baru...");
+        await rm(config.sessionDir, { recursive: true, force: true }).catch(() => null);
+        await setSetting("bot_status", "reconnecting");
+        await wait(2000);
+        await connect();
         return;
       }
 
-      const note =
-        code === 428 ? "koneksi belum siap" : loggedOut ? "belum selesai pair" : "koneksi putus";
+      const note = code === 428 ? "koneksi belum siap" : "koneksi putus";
       console.log(`[bot] ${note}, menyambung ulang...`);
       await wait(8000);
       await connect();

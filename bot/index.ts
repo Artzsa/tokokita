@@ -2,6 +2,7 @@ import "dotenv/config";
 import type { WAMessage } from "@whiskeysockets/baileys";
 import { config, maskPhone, refreshConfig } from "./config";
 import { getSettings } from "../src/lib/settings";
+import { isKnownCustomer } from "./customers";
 import { helpMessage } from "./faq";
 import { getRules, matchRule } from "../src/lib/rules";
 import { connect, getSocket } from "./login";
@@ -51,6 +52,8 @@ async function handleIncoming(message: WAMessage) {
 
   const text = messageText(message).trim();
   if (!text) return;
+
+  if (!(await isKnownCustomer(sender))) return;
 
   if (!withinRateLimit(sender)) {
     const state = rateLimits.get(sender);

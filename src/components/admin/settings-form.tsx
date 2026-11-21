@@ -160,14 +160,14 @@ export function SettingsForm({ initial }: { initial: Settings }) {
           </div>
           <div className="sm:col-span-2 rounded-hair border border-line bg-paper-deep/40 p-4">
             <p className="text-[11px] leading-relaxed text-muted">
-              Bot sekarang membalas chat pribadi siapa pun dengan aturan di{" "}
+              Bot sekarang hanya membalas chat pribadi dari nomor yang pernah
+              checkout. Aturan jawabannya di{" "}
               <Link href="/admin/rules" className="link-underline text-clay">
                 Rules WA
               </Link>
               . Nomor WhatsApp toko dan notifikasi diambil dari field{" "}
-              <strong>Nomor pairing</strong> di atas, jadi cukup samakan keduanya di
-              sini. Detail pesanan hanya dikirim kalau nomor pengirim cocok dengan
-              nomor pembeli.
+              <strong>Nomor pairing</strong> di atas. Detail pesanan hanya dikirim
+              kalau nomor pengirim cocok dengan nomor pembeli.
             </p>
           </div>
           <div>
