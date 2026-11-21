@@ -74,6 +74,7 @@ export async function connect(): Promise<WASocket | null> {
   let pairingRequested = false;
 
   sock.ev.on("connection.update", async ({ connection, lastDisconnect, qr }) => {
+    try {
     if (qr && config.loginMethod === "qr") {
       await setSetting("bot_qr", qr);
       await setSetting("bot_status", "waiting_scan");
@@ -124,6 +125,9 @@ export async function connect(): Promise<WASocket | null> {
       console.log(`[bot] ${note}, menyambung ulang...`);
       await wait(8000);
       await connect();
+    }
+    } catch (error) {
+      console.error("[bot] connection.update error:", error);
     }
   });
 

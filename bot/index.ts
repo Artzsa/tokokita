@@ -77,7 +77,15 @@ async function main() {
     `[bot] Siap. Poll outbox tiap ${config.pollMs} ms · whitelist ${config.allowedNumbers.length} nomor · dryRun=${config.dryRun}`,
   );
 
-  process.on("SIGINT", () => {
+  process.on("unhandledRejection", (reason) => {
+  console.error("[bot] unhandledRejection:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("[bot] uncaughtException:", error);
+});
+
+process.on("SIGINT", () => {
     if (outboxTimer) clearTimeout(outboxTimer);
     if (sweepTimer) clearInterval(sweepTimer);
     console.log("[bot] Berhenti.");
