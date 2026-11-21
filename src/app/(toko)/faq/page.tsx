@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MessageCircle, Plus } from "lucide-react";
-import { store, whatsappLink } from "@/lib/store";
+import { store } from "@/lib/store";
+import { whatsappLink } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "Pertanyaan umum",
@@ -71,7 +72,7 @@ const groups = [
   },
 ];
 
-export default function FaqPage() {
+export default async function FaqPage() {
   return (
     <div className="wrap pt-12 md:pt-16">
       <div className="grid gap-12 lg:grid-cols-[0.75fr_1.25fr] lg:gap-20">
@@ -90,7 +91,7 @@ export default function FaqPage() {
             bot balasan.
           </p>
           <a
-            href={whatsappLink("Halo Toko Kita, saya mau tanya sesuatu.")}
+            href={await whatsappLink("Halo Toko Kita, saya mau tanya sesuatu.")}
             target="_blank"
             rel="noreferrer"
             className="btn btn-outline mt-7"

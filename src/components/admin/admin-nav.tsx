@@ -6,6 +6,7 @@ import {
   ExternalLink,
   LayoutDashboard,
   LogOut,
+  MessageSquareText,
   Package,
   Settings,
   ShoppingCart,
@@ -18,6 +19,7 @@ const items = [
   { href: "/admin/produk", label: "Produk", icon: Package },
   { href: "/admin/pesanan", label: "Pesanan", icon: ShoppingCart },
   { href: "/admin/kategori", label: "Kategori", icon: Tags },
+  { href: "/admin/rules", label: "Rules WA", icon: MessageSquareText },
   { href: "/admin/pengaturan", label: "Pengaturan", icon: Settings },
 ];
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { store, whatsappLink } from "@/lib/store";
+import { store } from "@/lib/store";
+import { whatsappLink } from "@/lib/contact";
 
 const columns = [
   {
@@ -22,7 +23,7 @@ const columns = [
   },
 ];
 
-export function SiteFooter() {
+export async function SiteFooter() {
   return (
     <footer className="mt-24 border-t border-line bg-paper-deep">
       <div className="wrap grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
@@ -62,7 +63,7 @@ export function SiteFooter() {
             <li>{store.hours}</li>
             <li>
               <a
-                href={whatsappLink("Halo Toko Kita, saya mau tanya produk.")}
+                href={await whatsappLink("Halo Toko Kita, saya mau tanya produk.")}
                 target="_blank"
                 rel="noreferrer"
                 className="link-underline"

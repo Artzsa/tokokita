@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Clock, Mail, MapPin, MessageCircle, Wrench } from "lucide-react";
-import { store, whatsappLink } from "@/lib/store";
+import { store } from "@/lib/store";
+import { getStoreWhatsapp, whatsappLink } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "Kontak",
@@ -27,7 +28,8 @@ const topics = [
   },
 ];
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const whatsapp = await getStoreWhatsapp();
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     store.address,
   )}`;
@@ -53,7 +55,7 @@ export default function ContactPage() {
       <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_0.9fr] lg:gap-20">
         <div className="border-t border-line">
           <a
-            href={whatsappLink("Halo Toko Kita, saya mau tanya.")}
+            href={await whatsappLink("Halo Toko Kita, saya mau tanya.")}
             target="_blank"
             rel="noreferrer"
             className="group flex items-start gap-5 border-b border-line py-6"
@@ -68,7 +70,7 @@ export default function ContactPage() {
                 WhatsApp
               </p>
               <p className="mt-1 text-lg transition-colors group-hover:text-clay">
-                +{store.whatsapp}
+                +{whatsapp}
               </p>
               <p className="mt-1 text-xs text-muted">
                 Paling cepat. Biasanya dibalas dalam 2 jam kerja.
@@ -149,7 +151,7 @@ export default function ContactPage() {
             satu sore.
           </p>
           <a
-            href={whatsappLink(
+            href={await whatsappLink(
               "Halo, saya mau tanya soal perbaikan barang Toko Kita.",
             )}
             target="_blank"

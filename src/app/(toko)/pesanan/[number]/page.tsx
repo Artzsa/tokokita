@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Check, Copy, MessageCircle } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { formatDateTime, formatIDR, orderStatusLabel } from "@/lib/format";
-import { store, whatsappLink } from "@/lib/store";
+import { store } from "@/lib/store";
+import { whatsappLink } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "Pesanan",
@@ -236,7 +237,7 @@ export default async function OrderPage({
               </div>
 
               <a
-                href={whatsappLink(confirmMessage)}
+                href={await whatsappLink(confirmMessage)}
                 target="_blank"
                 rel="noreferrer"
                 className="btn mt-6 w-full border-paper bg-paper text-ink hover:border-clay hover:bg-clay hover:text-paper"
@@ -257,7 +258,7 @@ export default async function OrderPage({
                   : "Pembayaran sudah kami catat atau sedang diverifikasi."}
               </p>
               <a
-                href={whatsappLink(
+                href={await whatsappLink(
                   `Halo Toko Kita, saya mau tanya soal pesanan ${order.number}.`,
                 )}
                 target="_blank"

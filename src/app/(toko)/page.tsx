@@ -5,7 +5,8 @@ import { ProductCard } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
 import { prisma } from "@/lib/db";
 import { formatIDR } from "@/lib/format";
-import { store, whatsappLink } from "@/lib/store";
+import { store } from "@/lib/store";
+import { whatsappLink } from "@/lib/contact";
 
 const principles = [
   {
@@ -256,7 +257,7 @@ export default async function HomePage() {
             </p>
           </div>
           <a
-            href={whatsappLink("Halo, saya mau ikut surat bulanan Toko Kita.")}
+            href={await whatsappLink("Halo, saya mau ikut surat bulanan Toko Kita.")}
             target="_blank"
             rel="noreferrer"
             className="btn btn-solid"

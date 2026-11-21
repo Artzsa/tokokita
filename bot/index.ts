@@ -1,10 +1,31 @@
 import "dotenv/config";
 import type { WAMessage } from "@whiskeysockets/baileys";
-import { config, maskPhone, normalizePhone, refreshConfig } from "./config";
-import { answerFaq, helpMessage } from "./faq";
+import { config, maskPhone, refreshConfig } from "./config";
+import { helpMessage } from "./faq";
+import { getRules, matchRule } from "../src/lib/rules";
 import { connect, getSocket } from "./login";
 import { answerOrderLookup } from "./orders";
 import { processOutbox, sweepExpiredOrders } from "./outbox";
+
+const rateLimits = new Map<string, { count: number; resetAt: number; warned: boolean }>();
+
+function withinRateLimit(sender: string) {
+  const now = Date.now();
+  const state = rateLimits.get(sender);
+  if (!state || state.resetAt <= now) {
+    rateLimits.set(sender, { count: 1, resetAt: now + 60_000, warned: false });
+    return true;
+  }
+  if (state.count >= 5) {
+    if (!state.warned) {
+      state.warned = true;
+      return false;
+    }
+    return false;
+  }
+  state.count += 1;
+  return true;
+}
 
 function messageText(message: WAMessage) {
   const content = message.message;
@@ -26,13 +47,26 @@ async function handleIncoming(message: WAMessage) {
   if (jid.includes("broadcast")) return;
 
   const sender = jid.split("@")[0];
-  if (!config.allowedNumbers.includes(normalizePhone(sender))) return;
 
   const text = messageText(message).trim();
   if (!text) return;
 
+  if (!withinRateLimit(sender)) {
+    const state = rateLimits.get(sender);
+    if (state?.warned) {
+      await socket.sendMessage(
+        jid,
+        { text: "Terlalu banyak pesan dalam waktu singkat. Tunggu sebentar ya." },
+        { quoted: message },
+      );
+    }
+    return;
+  }
+
+  const rules = await getRules();
+  const rule = matchRule(text, rules);
   const reply =
-    (await answerOrderLookup(text, sender)) ?? answerFaq(text) ?? helpMessage();
+    (await answerOrderLookup(text, sender)) ?? rule?.answer ?? helpMessage();
   await socket.sendMessage(jid, { text: reply }, { quoted: message });
   console.log(`[chat] dibalas ke ${maskPhone(sender)}`);
 }

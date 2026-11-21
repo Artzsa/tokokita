@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { formatIDR } from "@/lib/format";
 import { store } from "@/lib/store";
+import { getStoreWhatsapp } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "Kebijakan",
@@ -78,7 +79,8 @@ const sections = [
   },
 ];
 
-export default function PolicyPage() {
+export default async function PolicyPage() {
+  const whatsapp = await getStoreWhatsapp();
   return (
     <div className="wrap pt-12 md:pt-16">
       <header className="max-w-3xl">
@@ -153,7 +155,7 @@ export default function PolicyPage() {
               <a href={`mailto:${store.email}`} className="link-underline text-clay">
                 {store.email}
               </a>{" "}
-              atau WhatsApp +{store.whatsapp}. Kami balas di jam kerja.
+              atau WhatsApp +{whatsapp}. Kami balas di jam kerja.
             </p>
           </div>
         </article>

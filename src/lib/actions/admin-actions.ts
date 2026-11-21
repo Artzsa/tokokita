@@ -23,6 +23,13 @@ export type CategoryFormState = {
   nonce?: number;
 };
 
+export type BotRuleFormState = {
+  error?: string;
+  ok?: boolean;
+  values?: Record<string, string>;
+  nonce?: number;
+};
+
 const productStatuses = ["draft", "active", "archived"] as const;
 const imageExtensions: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -370,4 +377,73 @@ export async function updateOrderStatusAction(formData: FormData) {
   revalidatePath("/admin/pesanan");
   revalidatePath(`/admin/pesanan/${id}`);
   revalidatePath("/pesanan");
+}
+
+export async function saveBotRuleAction(
+  _prev: BotRuleFormState,
+  formData: FormData,
+): Promise<BotRuleFormState> {
+  await requireAdmin();
+
+  const id = text(formData, "id");
+  const keywords = text(formData, "keywords");
+  const answer = text(formData, "answer");
+  const enabled = formData.get("enabled") === "on";
+  const position = toInt(text(formData, "position"));
+  const values = {
+    id,
+    keywords,
+    answer,
+    enabled: String(enabled),
+    position: String(position),
+  };
+  const retry = (error: string): BotRuleFormState => ({
+    error,
+    values,
+    nonce: Date.now(),
+  });
+
+  if (keywords.length < 2) return retry("Kata kunci minimal 2 karakter.");
+  if (answer.length < 10) return retry("Jawaban minimal 10 karakter.");
+
+  try {
+    if (id) {
+      await prisma.botRule.update({
+        where: { id },
+        data: { keywords, answer, enabled, position },
+      });
+    } else {
+      const nextPosition =
+        position > 0 ? position : (await prisma.botRule.count()) + 1;
+      await prisma.botRule.create({
+        data: { keywords, answer, enabled, position: nextPosition },
+      });
+    }
+  } catch {
+    return retry("Aturan gagal disimpan. Coba lagi.");
+  }
+
+  revalidatePath("/admin/rules");
+  return { ok: true, nonce: Date.now() };
+}
+
+export async function deleteBotRuleAction(formData: FormData) {
+  await requireAdmin();
+  const id = text(formData, "id");
+  if (!id) return;
+
+  await prisma.botRule.delete({ where: { id } }).catch(() => null);
+  revalidatePath("/admin/rules");
+}
+
+export async function toggleBotRuleAction(formData: FormData) {
+  await requireAdmin();
+  const id = text(formData, "id");
+  const enabled = text(formData, "enabled") === "true";
+  if (!id) return;
+
+  await prisma.botRule
+    .update({ where: { id }, data: { enabled } })
+    .catch(() => null);
+  revalidatePath("/admin/rules");
 }
