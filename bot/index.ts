@@ -1,6 +1,7 @@
 import "dotenv/config";
 import type { WAMessage } from "@whiskeysockets/baileys";
 import { config, maskPhone, refreshConfig } from "./config";
+import { getSettings } from "../src/lib/settings";
 import { helpMessage } from "./faq";
 import { getRules, matchRule } from "../src/lib/rules";
 import { connect, getSocket } from "./login";
@@ -65,8 +66,11 @@ async function handleIncoming(message: WAMessage) {
 
   const rules = await getRules();
   const rule = matchRule(text, rules);
+  const settings = await getSettings();
   const reply =
-    (await answerOrderLookup(text, sender)) ?? rule?.answer ?? helpMessage();
+    (await answerOrderLookup(text, sender)) ??
+    rule?.answer ??
+    (settings.welcomeMessage ? `${settings.welcomeMessage}\n\n${helpMessage()}` : helpMessage());
   const delay = 5000 + Math.floor(Math.random() * 10001);
   try {
     await socket.sendPresenceUpdate("composing", jid);

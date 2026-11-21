@@ -105,6 +105,29 @@ export function SettingsForm({ initial }: { initial: Settings }) {
 
       <section className="border border-line bg-paper p-5">
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+          Pesan awal
+        </h2>
+        <div className="mt-5">
+          <label htmlFor="welcomeMessage" className="label">
+            Pesan pembuka
+          </label>
+          <textarea
+            id="welcomeMessage"
+            name="welcomeMessage"
+            rows={4}
+            defaultValue={String(val("welcomeMessage", initial.welcomeMessage))}
+            placeholder="Halo! Saya bot Toko Kita..."
+            className="input"
+          />
+          <p className="mt-1 text-[11px] leading-relaxed text-muted">
+            Dipakai saat pertanyaan tidak cocok dengan aturan mana pun. Maksimal 500
+            karakter.
+          </p>
+        </div>
+      </section>
+
+      <section className="border border-line bg-paper p-5">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
           Koneksi bot
         </h2>
         <div className="mt-5 grid gap-5 sm:grid-cols-2">

@@ -6,6 +6,7 @@ export type Settings = {
   loginMethod: "qr" | "pairing";
   pairNumber: string;
   allowedNumbers: string;
+  welcomeMessage: string;
   pollMs: number;
   maxAttempts: number;
 };
@@ -27,6 +28,9 @@ function defaults(): Settings {
     loginMethod: process.env.BOT_LOGIN_METHOD === "pairing" ? "pairing" : "qr",
     pairNumber: process.env.BOT_PAIR_NUMBER ?? "",
     allowedNumbers: process.env.BOT_ALLOWED_NUMBERS ?? "",
+    welcomeMessage:
+      process.env.BOT_WELCOME_MESSAGE ??
+      "Halo! Saya bot Toko Kita. Saya bisa bantu cek pesanan, ongkir, pembayaran, retur, dan jam buka.",
     pollMs: number(process.env.BOT_POLL_MS, 5000),
     maxAttempts: number(process.env.BOT_MAX_ATTEMPTS, 3),
   };
@@ -56,6 +60,7 @@ export async function getSettings(): Promise<Settings> {
     loginMethod: map.get("loginMethod") === "pairing" ? "pairing" : map.get("loginMethod") === "qr" ? "qr" : base.loginMethod,
     pairNumber: map.get("pairNumber") ?? base.pairNumber,
     allowedNumbers: map.get("allowedNumbers") ?? base.allowedNumbers,
+    welcomeMessage: map.get("welcomeMessage") ?? base.welcomeMessage,
     pollMs: number(map.get("pollMs"), base.pollMs),
     maxAttempts: number(map.get("maxAttempts"), base.maxAttempts),
   };

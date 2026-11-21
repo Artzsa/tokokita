@@ -35,6 +35,7 @@ export async function saveSettingsAction(
     allowedNumbers: formData.has("allowedNumbers")
       ? text(formData, "allowedNumbers")
       : existing.allowedNumbers,
+    welcomeMessage: text(formData, "welcomeMessage"),
     pollMs: text(formData, "pollMs"),
     maxAttempts: text(formData, "maxAttempts"),
   };
@@ -59,6 +60,9 @@ export async function saveSettingsAction(
   const maxAttempts = Number(values.maxAttempts);
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 10) {
     return fail("Maksimal percobaan harus antara 1–10.");
+  }
+  if (values.welcomeMessage.length > 500) {
+    return fail("Pesan awal maksimal 500 karakter.");
   }
 
   await prisma.$transaction(
