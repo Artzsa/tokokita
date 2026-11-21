@@ -18,7 +18,7 @@ export async function answerOrderLookup(text: string, senderPhone: string) {
     return `Nomor pesanan ${number} tidak ditemukan. Coba cek lagi ya.`;
   }
 
-  if (normalizePhone(order.phone) !== normalizePhone(senderPhone)) {
+  if (normalizePhone(order.phone) !== normalizePhone(senderPhone.split(":")[0])) {
     return "Nomor ini tidak cocok dengan nomor pemesan. Detail pesanan hanya dikirim ke nomor yang terdaftar ya.";
   }
 

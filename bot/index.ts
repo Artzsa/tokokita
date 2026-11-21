@@ -46,7 +46,7 @@ async function handleIncoming(message: WAMessage) {
   if (jid.endsWith("@g.us") || jid === "status@broadcast") return;
   if (jid.includes("broadcast")) return;
 
-  const sender = jid.split("@")[0];
+  const sender = jid.split("@")[0].split(":")[0];
 
   const text = messageText(message).trim();
   if (!text) return;
@@ -67,8 +67,20 @@ async function handleIncoming(message: WAMessage) {
   const rule = matchRule(text, rules);
   const reply =
     (await answerOrderLookup(text, sender)) ?? rule?.answer ?? helpMessage();
+  const delay = 5000 + Math.floor(Math.random() * 10001);
+  try {
+    await socket.sendPresenceUpdate("composing", jid);
+  } catch {
+    // presence update opsional
+  }
+  await new Promise((resolve) => setTimeout(resolve, delay));
   await socket.sendMessage(jid, { text: reply }, { quoted: message });
-  console.log(`[chat] dibalas ke ${maskPhone(sender)}`);
+  try {
+    await socket.sendPresenceUpdate("paused", jid);
+  } catch {
+    // presence update opsional
+  }
+  console.log(`[chat] dibalas ke ${maskPhone(sender)} setelah ${delay} ms`);
 }
 
 let outboxTimer: NodeJS.Timeout | null = null;
