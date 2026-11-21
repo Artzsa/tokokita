@@ -51,6 +51,11 @@ export async function processOutbox() {
 
     const socket = getSocket();
 
+    if (!config.dryRun && (!socket || !socket.user)) {
+      console.log("[outbox] WhatsApp belum siap, pesan ditahan.");
+      return;
+    }
+
     for (const row of pending) {
       try {
         if (!config.dryRun) {
