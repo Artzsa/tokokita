@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Plus } from "lucide-react";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -321,57 +320,6 @@ export default async function AdminDashboardPage({
         )}
       </section>
 
-      <section className="mt-8">
-        <div className="flex items-end justify-between gap-4 border-b border-line pb-3">
-          <h2 className="text-[12px] font-semibold uppercase tracking-[0.14em]">
-            Stok menipis
-          </h2>
-          <Link
-            href="/admin/produk"
-            className="link-underline text-[11px] font-semibold uppercase tracking-[0.12em] text-muted"
-          >
-            Kelola
-          </Link>
-        </div>
-
-        {data.lowStock.length === 0 ? (
-          <p className="border-b border-line py-10 text-sm text-muted">
-            Semua stok masih aman.
-          </p>
-        ) : (
-          <ul>
-            {data.lowStock.map((product) => (
-              <li
-                key={product.key}
-                className="flex items-center gap-4 border-b border-line py-3"
-              >
-                <div className="relative size-12 shrink-0 overflow-hidden bg-paper-deep">
-                  <Image
-                    src={product.image}
-                    alt=""
-                    fill
-                    sizes="48px"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px]">{product.name}</p>
-                  <p className="text-[11px] text-muted">
-                    {product.kind} · {product.stock} tersisa
-                  </p>
-                </div>
-                <span
-                  className={`text-[12px] font-medium tabular-nums ${
-                    product.stock <= 2 ? "text-clay" : "text-muted"
-                  }`}
-                >
-                  {product.stock}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
     </div>
   );
 }

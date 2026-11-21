@@ -3,11 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight, Plus, Truck } from "lucide-react";
 import { AddToCartForm } from "@/components/add-to-cart-form";
+import Image from "next/image";
 import { Product3D } from "@/components/product-3d";
 import { ProductCard } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
 import { prisma } from "@/lib/db";
 import { formatIDR } from "@/lib/format";
+import { getLowStockProducts, getProductStock } from "@/lib/stock";
 import { store } from "@/lib/store";
 
 type Params = { slug: string };
@@ -63,11 +65,10 @@ export default async function ProductPage({
     take: 3,
   });
 
+  const lowStock = await getLowStockProducts(product.id, 4);
+
   const image = product.images[0];
-  const totalStock =
-    product.variants.length > 0
-      ? product.variants.reduce((sum, variant) => sum + variant.stock, 0)
-      : product.stock;
+  const stock = getProductStock(product);
 
   const discount = product.compareAt
     ? Math.round(((product.compareAt - product.price) / product.compareAt) * 100)
@@ -143,12 +144,14 @@ export default async function ProductPage({
           <p className="mt-3 flex items-center gap-2 text-[12px] text-muted">
             <span
               className={`inline-block size-1.5 rounded-full ${
-                totalStock > 0 ? "bg-moss" : "bg-clay"
+                stock > 0 ? (stock <= 5 ? "bg-clay" : "bg-moss") : "bg-clay"
               }`}
             />
-            {totalStock > 0
-              ? `Tersedia ${totalStock} unit`
-              : "Stok sedang habis"}
+            {stock <= 0
+              ? "Stok sedang habis"
+              : stock <= 5
+                ? `Sisa ${stock} unit — segera habis`
+                : `Tersedia ${stock} unit`}
           </p>
 
           <AddToCartForm product={product} variants={product.variants} />
@@ -192,6 +195,55 @@ export default async function ProductPage({
           </div>
         </div>
       </div>
+
+      {lowStock.length > 0 ? (
+        <section className="mt-12 border-t border-line pt-8">
+          <div className="flex items-end justify-between gap-4">
+            <h2 className="eyebrow">Sedang menipis</h2>
+            <Link
+              href="/produk"
+              className="link-underline text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft"
+            >
+              Lihat semua
+            </Link>
+          </div>
+          <ul className="mt-4 border-t border-line">
+            {lowStock.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-center gap-4 border-b border-line py-4"
+              >
+                <div className="relative size-12 shrink-0 overflow-hidden bg-paper-deep">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    sizes="48px"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/produk/${item.slug}`}
+                    className="block truncate text-[13px] font-medium hover:text-clay"
+                  >
+                    {item.name}
+                  </Link>
+                  <p className="mt-1 text-[11px] text-muted">
+                    {item.stock > 0 ? `Sisa ${item.stock} unit` : "Stok habis"}
+                  </p>
+                </div>
+                <Link
+                  href={`/produk/${item.slug}`}
+                  className="link-underline text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft"
+                >
+                  Lihat
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {related.length > 0 ? (
         <section className="mt-24 border-t border-line pt-10">

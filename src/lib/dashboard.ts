@@ -41,8 +41,6 @@ export async function getDashboardData(range: DashboardRange) {
     packedCount,
     shippedCount,
     activeProducts,
-    lowStockProducts,
-    lowStockVariants,
     recentOrders,
     orderItems,
     botStatus,
@@ -61,20 +59,6 @@ export async function getDashboardData(range: DashboardRange) {
     prisma.order.count({ where: { status: "packed" } }),
     prisma.order.count({ where: { status: "shipped" } }),
     prisma.product.count({ where: { status: "active" } }),
-    prisma.product.findMany({
-      where: { status: "active", stock: { lte: 5 } },
-      include: { images: { take: 1, orderBy: { position: "asc" } } },
-      orderBy: { stock: "asc" },
-      take: 6,
-    }),
-    prisma.productVariant.findMany({
-      where: { stock: { lte: 5 } },
-      include: {
-        product: { select: { id: true, name: true, images: { take: 1, orderBy: { position: "asc" } } } },
-      },
-      orderBy: { stock: "asc" },
-      take: 6,
-    }),
     prisma.order.findMany({
       include: { _count: { select: { items: true } } },
       orderBy: { createdAt: "desc" },
@@ -130,25 +114,6 @@ export async function getDashboardData(range: DashboardRange) {
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 6);
 
-  const lowStock = [
-    ...lowStockProducts.map((product) => ({
-      key: `product-${product.id}`,
-      name: product.name,
-      stock: product.stock,
-      image: product.images[0]?.url ?? "/uploads/placeholder.svg",
-      kind: "Produk",
-    })),
-    ...lowStockVariants.map((variant) => ({
-      key: `variant-${variant.id}`,
-      name: `${variant.label} · ${variant.product?.name ?? "Varian"}`,
-      stock: variant.stock,
-      image: variant.product?.images[0]?.url ?? "/uploads/placeholder.svg",
-      kind: "Varian",
-    })),
-  ]
-    .sort((a, b) => a.stock - b.stock)
-    .slice(0, 8);
-
   const outboxCounts = new Map(
     outbox.map((row) => [row.state, row._count._all]),
   );
@@ -165,7 +130,6 @@ export async function getDashboardData(range: DashboardRange) {
     activeProducts,
     topProducts,
     categories,
-    lowStock,
     recentOrders,
     botStatus: botStatus || "offline",
     outbox: {
