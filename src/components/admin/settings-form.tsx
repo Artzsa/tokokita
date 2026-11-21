@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import Link from "next/link";
 import { Check, Loader2 } from "lucide-react";
 import {
   saveSettingsAction,
@@ -134,21 +135,16 @@ export function SettingsForm({ initial }: { initial: Settings }) {
             />
             <p className="mt-1 text-[11px] text-muted">Wajib hanya untuk pairing code.</p>
           </div>
-          <div className="sm:col-span-2">
-            <label htmlFor="allowedNumbers" className="label">
-              Nomor yang boleh dibalas bot
-            </label>
-            <textarea
-              id="allowedNumbers"
-              name="allowedNumbers"
-              rows={3}
-              defaultValue={String(val("allowedNumbers", initial.allowedNumbers))}
-              placeholder="6281234567890, 6289876543210"
-              className="input font-mono text-[12px]"
-            />
-            <p className="mt-1 text-[11px] leading-relaxed text-muted">
-              Format 62xxx, pisah koma. Hanya membatasi chat masuk; notifikasi ke pembeli
-              tetap memakai nomor dari pesanan.
+          <div className="sm:col-span-2 rounded-hair border border-line bg-paper-deep/40 p-4">
+            <p className="text-[11px] leading-relaxed text-muted">
+              Bot sekarang membalas chat pribadi siapa pun dengan aturan di{" "}
+              <Link href="/admin/rules" className="link-underline text-clay">
+                Rules WA
+              </Link>
+              . Nomor WhatsApp toko dan notifikasi diambil dari field{" "}
+              <strong>Nomor pairing</strong> di atas, jadi cukup samakan keduanya di
+              sini. Detail pesanan hanya dikirim kalau nomor pengirim cocok dengan
+              nomor pembeli.
             </p>
           </div>
           <div>

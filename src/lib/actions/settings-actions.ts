@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { getSettings } from "@/lib/settings";
 
 export type SettingsState = {
   error?: string;
@@ -25,12 +26,15 @@ export async function saveSettingsAction(
 ): Promise<SettingsState> {
   await requireAdmin();
 
+  const existing = await getSettings();
   const values = {
     notificationsEnabled: enabled(formData, "notificationsEnabled"),
     dryRun: enabled(formData, "dryRun"),
     loginMethod: text(formData, "loginMethod"),
     pairNumber: text(formData, "pairNumber"),
-    allowedNumbers: text(formData, "allowedNumbers"),
+    allowedNumbers: formData.has("allowedNumbers")
+      ? text(formData, "allowedNumbers")
+      : existing.allowedNumbers,
     pollMs: text(formData, "pollMs"),
     maxAttempts: text(formData, "maxAttempts"),
   };
