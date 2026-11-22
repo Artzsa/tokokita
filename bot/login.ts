@@ -6,16 +6,29 @@ import makeWASocket, {
   DisconnectReason,
   fetchLatestBaileysVersion,
   useMultiFileAuthState as loadAuthState,
+  type MessageUpsertType,
+  type WAMessage,
   type WASocket,
 } from "@whiskeysockets/baileys";
 import { setSetting } from "../src/lib/settings";
 import { config } from "./config";
 
+export type ChatUpsert = { messages: WAMessage[]; type: MessageUpsertType };
+
 let currentSocket: WASocket | null = null;
 let reconnectCount = 0;
+let chatListener: ((args: ChatUpsert) => void) | null = null;
 
 export function getSocket() {
   return currentSocket;
+}
+
+/**
+ * Didaftarkan sekali dari index.ts. Setiap socket baru (termasuk setelah
+ * reconnect) memasang listener ini lagi, supaya bot tidak "connected tapi diam".
+ */
+export function setChatListener(listener: (args: ChatUpsert) => void) {
+  chatListener = listener;
 }
 
 function wait(ms: number) {
@@ -70,6 +83,10 @@ export async function connect(): Promise<WASocket | null> {
     markOnlineOnConnect: false,
   });
   currentSocket = sock;
+
+  sock.ev.on("messages.upsert", (args) => {
+    chatListener?.(args);
+  });
 
   sock.ev.on("creds.update", saveCreds);
 

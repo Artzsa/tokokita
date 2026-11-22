@@ -1,11 +1,12 @@
 import "dotenv/config";
 import type { WAMessage } from "@whiskeysockets/baileys";
 import { config, maskPhone, refreshConfig } from "./config";
-import { getSettings } from "../src/lib/settings";
 import { isKnownCustomer } from "./customers";
+import { getSettings } from "../src/lib/settings";
 import { helpMessage } from "./faq";
 import { getRules, matchRule } from "../src/lib/rules";
-import { connect, getSocket } from "./login";
+import { messageText, resolveSender } from "./incoming";
+import { connect, getSocket, setChatListener, type ChatUpsert } from "./login";
 import { answerOrderLookup } from "./orders";
 import { processOutbox, sweepExpiredOrders } from "./outbox";
 
@@ -29,37 +30,50 @@ function withinRateLimit(sender: string) {
   return true;
 }
 
-function messageText(message: WAMessage) {
-  const content = message.message;
-  if (!content) return "";
-  if ("conversation" in content && content.conversation) {
-    return content.conversation;
-  }
-  if ("extendedTextMessage" in content && content.extendedTextMessage?.text) {
-    return content.extendedTextMessage.text;
-  }
-  return "";
-}
-
 async function handleIncoming(message: WAMessage) {
   const socket = getSocket();
   const jid = message.key.remoteJid;
-  if (!socket || !jid || message.key.fromMe) return;
-  if (jid.endsWith("@g.us") || jid === "status@broadcast") return;
-  if (jid.includes("broadcast")) return;
-
-  const sender = jid.split("@")[0].split(":")[0];
-
+  const sender = resolveSender(message);
   const text = messageText(message).trim();
-  if (!text) return;
+  const meta = `jid=${jid || "-"} pn=${sender.phone || "-"} lid=${sender.lid || "-"}`;
 
-  if (!(await isKnownCustomer(sender))) return;
+  console.log(
+    `[chat] masuk: ${meta} fromMe=${message.key.fromMe} text=${JSON.stringify(text).slice(0, 60)}`,
+  );
 
-  if (!withinRateLimit(sender)) {
-    const state = rateLimits.get(sender);
+  if (!socket || !jid || message.key.fromMe) {
+    console.log(
+      `[chat] diabaikan: ${meta} alasan=${!socket ? "socket kosong" : message.key.fromMe ? "fromMe (pesan bot sendiri)" : "jid kosong"}`,
+    );
+    return;
+  }
+  if (jid.endsWith("@g.us") || jid === "status@broadcast" || jid.includes("broadcast")) {
+    console.log(`[chat] diabaikan: ${meta} alasan=grup/broadcast`);
+    return;
+  }
+  if (!text) {
+    console.log(`[chat] diabaikan: ${meta} alasan=pesan bukan teks`);
+    return;
+  }
+  if (!sender.phone) {
+    console.log(`[chat] diabaikan: ${meta} alasan=identitas pengirim tidak diketahui`);
+    return;
+  }
+
+  const known = await isKnownCustomer(sender.phone);
+  if (!known) {
+    console.log(
+      `[chat] diabaikan: ${meta} alasan=nomor tidak ada di database text=${JSON.stringify(text).slice(0, 60)}`,
+    );
+    return;
+  }
+
+  if (!withinRateLimit(sender.phone)) {
+    console.log(`[chat] diabaikan: ${meta} alasan=rate-limit`);
+    const state = rateLimits.get(sender.phone);
     if (state?.warned) {
       await socket.sendMessage(
-        jid,
+        sender.replyJid,
         { text: "Terlalu banyak pesan dalam waktu singkat. Tunggu sebentar ya." },
         { quoted: message },
       );
@@ -71,23 +85,25 @@ async function handleIncoming(message: WAMessage) {
   const rule = matchRule(text, rules);
   const settings = await getSettings();
   const reply =
-    (await answerOrderLookup(text, sender)) ??
+    (await answerOrderLookup(text, sender.phone)) ??
     rule?.answer ??
     (settings.welcomeMessage ? `${settings.welcomeMessage}\n\n${helpMessage()}` : helpMessage());
   const delay = 5000 + Math.floor(Math.random() * 10001);
   try {
-    await socket.sendPresenceUpdate("composing", jid);
+    await socket.sendPresenceUpdate("composing", sender.replyJid);
   } catch {
     // presence update opsional
   }
   await new Promise((resolve) => setTimeout(resolve, delay));
-  await socket.sendMessage(jid, { text: reply }, { quoted: message });
+  await socket.sendMessage(sender.replyJid, { text: reply }, { quoted: message });
   try {
-    await socket.sendPresenceUpdate("paused", jid);
+    await socket.sendPresenceUpdate("paused", sender.replyJid);
   } catch {
     // presence update opsional
   }
-  console.log(`[chat] dibalas ke ${maskPhone(sender)} setelah ${delay} ms`);
+  console.log(
+    `[chat] dibalas ke ${maskPhone(sender.phone)} lewat ${sender.replyJid} setelah ${delay} ms`,
+  );
 }
 
 let outboxTimer: NodeJS.Timeout | null = null;
@@ -104,21 +120,25 @@ function scheduleOutbox() {
   }, config.pollMs);
 }
 
+async function handleUpsert({ messages, type }: ChatUpsert) {
+  console.log(`[chat] event upsert type=${type} jumlah=${messages.length}`);
+  if (type !== "notify") return;
+  for (const message of messages) {
+    try {
+      await handleIncoming(message);
+    } catch (error) {
+      console.error("[chat] gagal membalas:", error);
+    }
+  }
+}
+
 async function main() {
   console.log("[bot] Menjalankan Toko Kita WhatsApp bot...");
   await refreshConfig();
-  const socket = await connect();
-
-  socket?.ev.on("messages.upsert", async ({ messages, type }) => {
-    if (type !== "notify") return;
-    for (const message of messages) {
-      try {
-        await handleIncoming(message);
-      } catch (error) {
-        console.error("[chat] gagal membalas:", error);
-      }
-    }
+  setChatListener((args) => {
+    void handleUpsert(args);
   });
+  await connect();
 
   await sweepExpiredOrders();
   scheduleOutbox();
@@ -131,14 +151,14 @@ async function main() {
   );
 
   process.on("unhandledRejection", (reason) => {
-  console.error("[bot] unhandledRejection:", reason);
-});
+    console.error("[bot] unhandledRejection:", reason);
+  });
 
-process.on("uncaughtException", (error) => {
-  console.error("[bot] uncaughtException:", error);
-});
+  process.on("uncaughtException", (error) => {
+    console.error("[bot] uncaughtException:", error);
+  });
 
-process.on("SIGINT", () => {
+  process.on("SIGINT", () => {
     if (outboxTimer) clearTimeout(outboxTimer);
     if (sweepTimer) clearInterval(sweepTimer);
     console.log("[bot] Berhenti.");
