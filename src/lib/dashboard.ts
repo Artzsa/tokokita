@@ -41,6 +41,7 @@ export async function getDashboardData(range: DashboardRange) {
     packedCount,
     shippedCount,
     activeProducts,
+    lowStockCount,
     recentOrders,
     orderItems,
     botStatus,
@@ -59,6 +60,9 @@ export async function getDashboardData(range: DashboardRange) {
     prisma.order.count({ where: { status: "packed" } }),
     prisma.order.count({ where: { status: "shipped" } }),
     prisma.product.count({ where: { status: "active" } }),
+    prisma.product.count({
+      where: { status: "active", stock: { lte: 5 } },
+    }),
     prisma.order.findMany({
       include: { _count: { select: { items: true } } },
       orderBy: { createdAt: "desc" },
@@ -128,6 +132,7 @@ export async function getDashboardData(range: DashboardRange) {
     packedCount,
     shippedCount,
     activeProducts,
+    lowStockCount,
     topProducts,
     categories,
     recentOrders,

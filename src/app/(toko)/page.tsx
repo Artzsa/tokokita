@@ -1,42 +1,30 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { Product3D } from "@/components/product-3d";
 import { ProductCard } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
-import { prisma } from "@/lib/db";
 import { formatIDR } from "@/lib/format";
+import { getHomeCatalog } from "@/lib/storefront";
 import { store } from "@/lib/store";
 import { whatsappLink } from "@/lib/contact";
 
-const principles = [
+const process = [
   {
-    title: "Bahan yang bisa dilacak",
-    body: "Kami sebut asal kayu, jenis kain, dan nama bengkelnya. Kalau kami tidak tahu asalnya, produk itu tidak masuk katalog.",
+    title: "Stok dihitung dari sisa",
+    body: "Jumlah yang tampil di halaman produk berasal dari stok yang tersimpan. Kalau habis, tombol beli dimatikan.",
   },
   {
-    title: "Jumlah kecil, bukan massal",
-    body: "Tiap produk dibuat dalam batch 5–20 unit. Kalau habis, kami menjahit lagi — bukan mengganti bahan dengan yang lebih murah.",
+    title: "Pembayaran dicek manual",
+    body: "Transfer dan COD dikonfirmasi admin lewat WhatsApp sebelum pesanan dikemas.",
   },
   {
-    title: "Bisa diperbaiki",
-    body: "Jahitan tas, fitting lampu, dan lapisan rotan bisa kami perbaiki. Kirim balik, kami kerjakan tanpa biaya jasa.",
+    title: "Nomor pesanan bisa dibuka lagi",
+    body: "Simpan nomor pesanan. Rincian dan status bisa dilihat kapan saja tanpa membuat akun.",
   },
 ];
 
 export default async function HomePage() {
-  const [products, categories, productCount] = await Promise.all([
-    prisma.product.findMany({
-      where: { status: "active" },
-      include: { images: { orderBy: { position: "asc" } } },
-      orderBy: { createdAt: "asc" },
-      take: 6,
-    }),
-    prisma.category.findMany({
-      orderBy: { position: "asc" },
-      include: { _count: { select: { products: true } } },
-    }),
-    prisma.product.count({ where: { status: "active" } }),
-  ]);
+  const { products, bestseller, productCount, categoryCount, categories } =
+    await getHomeCatalog();
 
   const hero = products[0];
   const heroImage = hero?.images[0];
@@ -48,14 +36,13 @@ export default async function HomePage() {
           <div>
             <p className="eyebrow flex items-center gap-3">
               <span className="h-px w-8 bg-clay" />
-              {store.city} — sejak {store.established}
+              Toko kecil, dikelola sendiri
             </p>
 
             <h1 className="display mt-6 text-[clamp(2.7rem,5.2vw,4.3rem)]">
               Benda harian,
               <br />
-              dipakai{" "}
-              <span className="italic text-clay">bertahun-tahun</span>.
+              dipilih untuk <span className="italic text-clay">dipakai lama</span>.
             </h1>
 
             <p className="mt-8 max-w-md text-[15px] leading-relaxed text-ink-soft">
@@ -71,26 +58,10 @@ export default async function HomePage() {
               </Link>
             </div>
 
-            <dl className="mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-line pt-6">
-              <div>
-                <dt className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-                  Produk aktif
-                </dt>
-                <dd className="display mt-1 text-2xl">{productCount}</dd>
-              </div>
-              <div>
-                <dt className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-                  Bengkel mitra
-                </dt>
-                <dd className="display mt-1 text-2xl">6</dd>
-              </div>
-              <div>
-                <dt className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-                  Proses pesanan
-                </dt>
-                <dd className="display mt-1 text-2xl">1–2 hari</dd>
-              </div>
-            </dl>
+            <p className="mt-6 text-[12px] font-medium text-muted">
+              {productCount} produk aktif · {categoryCount} kategori · gratis
+              kirim di atas {formatIDR(store.freeShippingThreshold)}
+            </p>
           </div>
 
           <div className="relative">
@@ -107,8 +78,8 @@ export default async function HomePage() {
 
             {hero ? (
               <div className="absolute -bottom-6 left-4 max-w-[240px] border border-line bg-paper p-4 shadow-[0_1px_0_rgba(23,19,16,0.06)] sm:left-8">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-                  Sedang di meja kami
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
+                  Dari katalog
                 </p>
                 <p className="mt-2 text-sm font-medium leading-snug">{hero.name}</p>
                 <p className="mt-1 text-xs text-muted">{hero.tagline}</p>
@@ -118,10 +89,9 @@ export default async function HomePage() {
                   </span>
                   <Link
                     href={`/produk/${hero.slug}`}
-                    className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-clay"
+                    className="link-underline text-[12px] font-medium text-clay"
                   >
-                    Lihat
-                    <ArrowUpRight size={12} />
+                    Lihat produk
                   </Link>
                 </div>
               </div>
@@ -135,7 +105,7 @@ export default async function HomePage() {
           <p className="eyebrow">Indeks kategori</p>
           <Link
             href="/produk"
-            className="link-underline text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft"
+            className="link-underline text-[12px] font-medium text-ink-soft"
           >
             Semua produk
           </Link>
@@ -150,7 +120,7 @@ export default async function HomePage() {
                 className="group flex flex-col justify-between border-b border-line py-7 transition-colors hover:bg-paper-deep/50 lg:border-b-0 lg:border-r lg:px-6 lg:first:pl-0 lg:last:border-r-0"
               >
                 <div>
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
+                  <span className="text-[11px] font-semibold tracking-[0.1em] text-clay">
                     0{index + 1}
                   </span>
                   <h2 className="display mt-3 text-2xl transition-colors group-hover:text-clay">
@@ -160,9 +130,8 @@ export default async function HomePage() {
                     {category.blurb}
                   </p>
                 </div>
-                <span className="mt-6 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-soft">
-                  {category._count.products} produk
-                  <ArrowUpRight size={12} />
+                <span className="link-underline mt-6 w-fit text-[12px] font-medium text-ink-soft">
+                  {category.count} produk
                 </span>
               </Link>
             ))}
@@ -173,14 +142,23 @@ export default async function HomePage() {
       <section className="wrap mt-20">
         <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5">
           <div>
-            <p className="eyebrow">Pilihan bulan ini</p>
+            <p className="eyebrow">
+              {bestseller ? "Paling sering dipesan" : "Baru di katalog"}
+            </p>
             <h2 className="display mt-3 text-[clamp(1.9rem,3.4vw,2.8rem)]">
-              Yang paling sering dipesan
+              {bestseller
+                ? "Yang paling sering dipesan"
+                : "Yang baru masuk katalog"}
             </h2>
+            <p className="mt-2 max-w-md text-[13px] leading-relaxed text-muted">
+              {bestseller
+                ? "Diurutkan dari jumlah unit yang benar-benar tercatat di pesanan."
+                : "Enam produk aktif yang paling baru ditambahkan."}
+            </p>
           </div>
           <Link
-            href="/produk?urut=laris"
-            className="link-underline text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft"
+            href={bestseller ? "/produk?urut=laris" : "/produk"}
+            className="link-underline text-[12px] font-medium text-ink-soft"
           >
             Lihat semua
           </Link>
@@ -200,28 +178,27 @@ export default async function HomePage() {
       <section className="mt-24 bg-moss text-paper">
         <div className="wrap grid gap-14 py-20 lg:grid-cols-2 lg:gap-20">
           <div>
-            <p className="eyebrow text-paper/55">Cara kami bekerja</p>
+            <p className="eyebrow text-paper/55">Cara toko bekerja</p>
             <h2 className="display mt-5 text-[clamp(2rem,4.4vw,3.4rem)]">
-              Tiga hal yang
+              Dari pesanan
               <br />
-              tidak kami tawar.
+              sampai paket.
             </h2>
             <p className="mt-6 max-w-md text-sm leading-relaxed text-paper/70">
-              {store.name} dimulai dari satu meja kerja di {store.city}. Kami
-              tidak punya gudang besar, jadi setiap barang dipilih satu per satu
-              dan diuji sebelum masuk katalog.
+              Toko ini dijalankan manual. Tidak ada status yang berubah sendiri.
+              Yang tampil di sini adalah yang benar-benar tercatat di pesanan.
             </p>
             <Link
-              href="/tentang"
+              href="/kebijakan"
               className="btn mt-9 border-paper/40 text-paper hover:border-paper hover:bg-paper hover:text-ink"
             >
-              Cerita lengkapnya
+              Baca kebijakan toko
             </Link>
           </div>
 
           <Reveal delay={160}>
             <ol className="border-t border-paper/15">
-              {principles.map((item, index) => (
+              {process.map((item, index) => (
                 <li
                   key={item.title}
                   className="grid grid-cols-[auto_1fr] gap-6 border-b border-paper/15 py-7"
@@ -230,7 +207,7 @@ export default async function HomePage() {
                     0{index + 1}
                   </span>
                   <div>
-                    <h3 className="text-[12px] font-semibold uppercase tracking-[0.14em]">
+                    <h3 className="text-[13px] font-medium">
                       {item.title}
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-paper/70">
@@ -247,23 +224,31 @@ export default async function HomePage() {
       <section className="wrap mt-20">
         <div className="grid gap-8 border border-line p-8 md:grid-cols-[1fr_auto] md:items-center md:p-12">
           <div>
-            <p className="eyebrow">Surat bulanan</p>
+            <p className="eyebrow">Sebelum memesan</p>
             <h2 className="display mt-3 text-[clamp(1.8rem,3vw,2.6rem)]">
-              Cerita dari bengkel, tanpa spam.
+              Masih ragu soal bahan atau ukuran?
             </h2>
             <p className="mt-3 max-w-lg text-sm leading-relaxed text-muted">
-              Satu surat per bulan: produk baru, catatan bahan, dan jadwal bengkel
-              buka untuk umum. Kami tidak menjual alamat email ke siapa pun.
+              Sebutkan nama produknya, lalu tanya lewat WhatsApp. Pesan dibalas
+              manual oleh admin. Pertanyaan yang sering muncul sudah dirangkum di
+              FAQ.
             </p>
           </div>
-          <a
-            href={await whatsappLink("Halo, saya mau ikut surat bulanan Toko Kita.")}
-            target="_blank"
-            rel="noreferrer"
-            className="btn btn-solid"
-          >
-            Ikut lewat WhatsApp
-          </a>
+          <div className="flex flex-wrap items-center gap-4">
+            <a
+              href={await whatsappLink(
+                "Halo, saya mau tanya soal bahan atau ukuran produk di Toko Kita.",
+              )}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-solid"
+            >
+              Tanya lewat WhatsApp
+            </a>
+            <Link href="/faq" className="link-underline text-[12px] font-medium text-ink-soft">
+              Baca FAQ
+            </Link>
+          </div>
         </div>
       </section>
     </>

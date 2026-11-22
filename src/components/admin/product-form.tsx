@@ -213,9 +213,9 @@ export function ProductForm({
                   aria-describedby={errors.status ? "status-error" : undefined}
                   className="input"
                 >
-                  <option value="draft">Draf — tidak tampil</option>
-                  <option value="active">Aktif — tampil di katalog</option>
-                  <option value="archived">Arsip — disembunyikan</option>
+                  <option value="draft">Draf (tidak tampil)</option>
+                  <option value="active">Aktif (tampil di katalog)</option>
+                  <option value="archived">Arsip (disembunyikan)</option>
                 </select>
                 {errors.status ? (
                   <p id="status-error" className="field-error">

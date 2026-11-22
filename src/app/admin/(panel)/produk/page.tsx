@@ -25,15 +25,17 @@ const statusTone: Record<string, string> = {
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ saved?: string; deleted?: string; q?: string }>;
+  searchParams: Promise<{ saved?: string; deleted?: string; q?: string; stok?: string }>;
 }) {
   await requireAdmin();
   const params = await searchParams;
   const q = typeof params.q === "string" ? params.q.trim() : "";
+  const lowStockOnly = params.stok === "menipis";
 
-  const where: Prisma.ProductWhereInput = q
-    ? { OR: [{ name: { contains: q } }, { slug: { contains: q } }] }
-    : {};
+  const where: Prisma.ProductWhereInput = {
+    ...(q ? { OR: [{ name: { contains: q } }, { slug: { contains: q } }] } : {}),
+    ...(lowStockOnly ? { status: "active", stock: { lte: 5 } } : {}),
+  };
 
   const products = await prisma.product.findMany({
     where,
@@ -54,8 +56,18 @@ export default async function AdminProductsPage({
             Produk
           </h1>
           <p className="mt-2 text-[13px] text-muted">
-            {products.length} produk{ q ? ` cocok dengan “${q}”` : " terdaftar" }.
+            {lowStockOnly
+              ? `${products.length} produk aktif dengan sisa lima unit atau kurang.`
+              : `${products.length} produk${q ? ` cocok dengan “${q}”` : " terdaftar"}.`}
           </p>
+          {lowStockOnly ? (
+            <Link
+              href="/admin/produk"
+              className="link-underline mt-1 inline-block text-[12px] text-clay"
+            >
+              Tampilkan semua produk
+            </Link>
+          ) : null}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <form action="/admin/produk" className="flex items-center border border-line">

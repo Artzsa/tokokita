@@ -1,20 +1,25 @@
 "use client";
 
-import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
 export type SceneTilt = { x: number; y: number };
 
+type InvalidateRef = React.MutableRefObject<(() => void) | null>;
+
 function CatalogCard({
   src,
   tilt,
   onReady,
+  invalidateRef,
 }: {
   src: string;
   tilt: React.RefObject<SceneTilt>;
   onReady: () => void;
+  invalidateRef: InvalidateRef;
 }) {
+  const { invalidate } = useThree();
   const texture = useLoader(THREE.TextureLoader, src);
   const group = useRef<THREE.Group>(null);
   const prepared = useMemo(() => {
@@ -26,20 +31,34 @@ function CatalogCard({
   }, [texture]);
 
   useEffect(() => {
+    invalidateRef.current = invalidate;
+    invalidate();
     onReady();
-    return () => prepared.dispose();
-  }, [onReady, prepared]);
+    invalidate();
 
-  useFrame((state, delta) => {
+    return () => {
+      invalidateRef.current = null;
+      prepared.dispose();
+    };
+  }, [invalidate, invalidateRef, onReady, prepared]);
+
+  useFrame((_, delta) => {
     const node = group.current;
     if (!node) return;
 
-    const t = state.clock.elapsedTime;
-    const targetY = tilt.current.y + Math.sin(t * 0.32) * 0.025;
-    const targetX = tilt.current.x + Math.sin(t * 0.47) * 0.01;
+    const damping = 1 - Math.exp(-5 * delta);
+    const nextY = node.rotation.y + (tilt.current.y - node.rotation.y) * damping;
+    const nextX = node.rotation.x + (tilt.current.x - node.rotation.x) * damping;
 
-    node.rotation.y = THREE.MathUtils.damp(node.rotation.y, targetY, 5, delta);
-    node.rotation.x = THREE.MathUtils.damp(node.rotation.x, targetX, 5, delta);
+    node.rotation.y = nextY;
+    node.rotation.x = nextX;
+
+    if (
+      Math.abs(tilt.current.y - nextY) > 0.0005 ||
+      Math.abs(tilt.current.x - nextX) > 0.0005
+    ) {
+      invalidate();
+    }
   });
 
   return (
@@ -60,13 +79,16 @@ export default function CatalogScene({
   src,
   tilt,
   onReady,
+  invalidateRef,
 }: {
   src: string;
   tilt: React.RefObject<SceneTilt>;
   onReady: () => void;
+  invalidateRef: InvalidateRef;
 }) {
   return (
     <Canvas
+      frameloop="demand"
       dpr={[1, 1.5]}
       camera={{ position: [0, 0, 3.8], fov: 35 }}
       gl={{ antialias: true, alpha: true }}
@@ -76,7 +98,12 @@ export default function CatalogScene({
       <directionalLight position={[2, 3, 4]} intensity={1.5} />
       <directionalLight position={[-2, -1, 2]} intensity={0.35} />
       <Suspense fallback={null}>
-        <CatalogCard src={src} tilt={tilt} onReady={onReady} />
+        <CatalogCard
+          src={src}
+          tilt={tilt}
+          onReady={onReady}
+          invalidateRef={invalidateRef}
+        />
       </Suspense>
     </Canvas>
   );

@@ -19,6 +19,7 @@ export function DashboardRange({ current }: { current: string }) {
           <Link
             key={range.value}
             href={`/admin?range=${range.value}`}
+            aria-current={active ? "page" : undefined}
             className={`tag ${active ? "tag-active" : "hover:border-ink"}`}
           >
             {range.label}

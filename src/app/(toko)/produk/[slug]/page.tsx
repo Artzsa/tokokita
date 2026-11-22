@@ -38,7 +38,7 @@ export async function generateMetadata({
     title: product.name,
     description: product.tagline,
     openGraph: {
-      title: `${product.name} — ${store.name}`,
+      title: `${product.name} · ${store.name}`,
       description: product.tagline,
       images: product.images[0]?.url ? [{ url: product.images[0].url }] : undefined,
     },
@@ -85,7 +85,7 @@ export default async function ProductPage({
     <div className="wrap pt-6">
       <nav
         aria-label="Breadcrumb"
-        className="flex flex-wrap items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted"
+        className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted"
       >
         <Link href="/produk" className="hover:text-ink">
           Katalog
@@ -150,7 +150,7 @@ export default async function ProductPage({
             {stock <= 0
               ? "Stok sedang habis"
               : stock <= 5
-                ? `Sisa ${stock} unit — segera habis`
+                ? `Sisa ${stock} unit, segera habis`
                 : `Tersedia ${stock} unit`}
           </p>
 
@@ -178,11 +178,11 @@ export default async function ProductPage({
           <div className="mt-8 flex gap-4 bg-paper-deep/60 p-5">
             <Truck size={18} strokeWidth={1.5} className="mt-0.5 shrink-0 text-clay" />
             <div className="text-[13px] leading-relaxed text-ink-soft">
-              <p className="font-medium">Dikirim dari {store.city}</p>
+              <p className="font-medium">Pengiriman dan pembayaran</p>
               <p className="mt-1 text-muted">
-                Diproses 1–2 hari kerja. Gratis ongkir di atas{" "}
-                {formatIDR(store.freeShippingThreshold)}. Bisa juga ambil di
-                bengkel.
+                Ongkir tetap {formatIDR(store.flatShipping)}, gratis di atas{" "}
+                {formatIDR(store.freeShippingThreshold)}. Pesanan dicek manual
+                setelah checkout.
               </p>
             </div>
           </div>

@@ -1,72 +1,98 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MessageCircle, Plus } from "lucide-react";
+import { formatIDR } from "@/lib/format";
 import { store } from "@/lib/store";
 import { whatsappLink } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "Pertanyaan umum",
   description:
-    "Pengiriman, pembayaran, penukaran, dan perawatan barang Toko Kita.",
+    "Cara memesan, pembayaran, pengiriman, stok, dan bot WhatsApp Toko Kita.",
 };
 
 const groups = [
   {
-    title: "Pesanan & pengiriman",
+    title: "Pesanan",
     items: [
       {
-        q: "Berapa lama pesanan diproses?",
-        a: "Barang yang ada stoknya diproses 1–2 hari kerja, lalu diserahkan ke kurir. Untuk produk preorder, waktu pembuatan 2–3 minggu dan selalu kami tulis di halaman produk.",
+        q: "Bagaimana cara memesan?",
+        a: "Pilih produk, masukkan ke keranjang, lalu isi nama, nomor WhatsApp, dan alamat di halaman checkout. Setelah pesanan dibuat, kamu akan melihat nomor pesanan dan langkah pembayaran.",
+      },
+      {
+        q: "Apakah perlu membuat akun?",
+        a: "Tidak. Checkout berjalan tanpa akun. Simpan tautan halaman pesanan yang muncul setelah checkout supaya kamu bisa membukanya lagi.",
+      },
+      {
+        q: "Bagaimana cara melihat status pesanan?",
+        a: "Buka halaman pesanan yang kamu simpan setelah checkout. Status di halaman itu diubah manual oleh admin, jadi yang tampil adalah status terakhir yang dicatat.",
       },
       {
         q: "Bisa bayar di tempat (COD)?",
-        a: "Bisa untuk beberapa wilayah di Jawa. Kalau alamatmu di luar jangkauan kurir COD, kami ubah ke transfer dan kabari lewat WhatsApp sebelum mengirim.",
-      },
-      {
-        q: "Bisa kirim ke luar Indonesia?",
-        a: "Bisa, tapi ongkir dihitung manual. Kirim alamat lengkap lewat WhatsApp, kami balas dengan biaya dan estimasi waktu.",
-      },
-      {
-        q: "Bisa ambil sendiri di bengkel?",
-        a: `Bisa. Tulis "ambil di bengkel" di catatan checkout, lalu atur waktu lewat WhatsApp. Alamat: ${store.address}.`,
+        a: "Bisa. Pilih COD di checkout. Untuk transfer, minta nomor rekening lewat WhatsApp setelah pesanan dibuat.",
       },
     ],
   },
   {
-    title: "Barang & perawatan",
+    title: "Pembayaran & pengiriman",
+    items: [
+      {
+        q: "Metode pembayaran apa saja yang diterima?",
+        a: "Transfer bank dan COD. Tidak ada pembayaran kartu atau cicilan di situs ini. Admin mencocokkan pembayaran secara manual.",
+      },
+      {
+        q: "Berapa ongkos kirim?",
+        a: `Ongkir tetap ${formatIDR(store.flatShipping)} per pesanan. Pesanan dengan subtotal di atas ${formatIDR(store.freeShippingThreshold)} tidak dikenakan ongkir.`,
+      },
+      {
+        q: "Berapa lama pesanan diproses?",
+        a: "Pesanan diproses manual satu per satu. Waktu proses tergantung jumlah pesanan yang masuk. Status di halaman pesanan berubah setelah admin mengubahnya, dan kabar penting dikirim lewat WhatsApp.",
+      },
+      {
+        q: "Bisa ambil sendiri di toko?",
+        a: "Opsi ambil sendiri belum ada di checkout. Kalau kamu butuh, tanya dulu lewat WhatsApp sebelum membayar supaya bisa diatur.",
+      },
+    ],
+  },
+  {
+    title: "Barang & stok",
     items: [
       {
         q: "Apakah foto di katalog foto asli?",
-        a: "Belum. Foto di katalog adalah foto stok berlisensi CC0/public domain yang dipakai sementara supaya bentuk barang bisa dibayangkan. Foto asli tiap produk sedang kami siapkan dan akan menggantikan foto stok tanpa mengubah harga.",
+        a: "Belum. Foto katalog masih memakai foto stok berlisensi CC0/public domain supaya bentuk barang bisa dibayangkan. Foto asli tiap produk akan menggantikannya tanpa mengubah harga.",
       },
       {
-        q: "Kenapa warna bisa berbeda dari gambar?",
-        a: "Sebagian barang dibuat manual, jadi warna dan tekstur tiap unit bisa sedikit berbeda. Perbedaan layar juga berpengaruh. Kami anggap itu bagian dari barang buatan tangan, bukan cacat.",
+        q: "Kenapa jumlah stok berubah saat saya memesan?",
+        a: "Stok berkurang saat pesanan dibuat, bukan saat pembayaran dikonfirmasi. Kalau pesanan dibatalkan, stok dikembalikan oleh admin. Jumlah yang tampil di halaman produk berasal dari data stok yang tersimpan.",
       },
       {
-        q: "Bagaimana merawat linen dan kanvas?",
-        a: "Cuci tangan dengan air dingin dan sabun lembut, lalu keringkan di tempat teduh. Jangan pakai mesin pengering atau pemutih. Linen akan makin lembut setelah 3–4 kali cuci.",
+        q: "Barang yang saya mau sedang habis, bagaimana?",
+        a: "Tombol beli dimatikan selama stok kosong. Tanya lewat WhatsApp kalau mau tahu kapan stok diisi lagi. Kami tidak menerima pembayaran untuk barang yang belum ada.",
       },
       {
-        q: "Bisa pesan ukuran khusus?",
-        a: "Untuk sarung bantal dan nampan, kadang bisa. Kirim ukuran yang diinginkan; kami cek ketersediaan bahan dan harga sebelum menerima pesanan.",
+        q: "Bisa pesan ukuran atau warna khusus?",
+        a: "Belum. Katalog hanya berisi produk yang sudah tercatat stoknya. Kalau ada kebutuhan khusus, tanya dulu lewat WhatsApp sebelum memesan.",
       },
     ],
   },
   {
-    title: "Penukaran & perbaikan",
+    title: "Bot WhatsApp & bantuan",
     items: [
       {
-        q: "Barang rusak saat dikirim, bagaimana?",
-        a: "Laporkan dalam 3 hari setelah diterima dengan foto kemasan dan barang. Kami kirim unit pengganti atau kembalikan uang, termasuk ongkir.",
+        q: "Apakah pesan WhatsApp saya dibalas bot?",
+        a: "Bot hanya membalas nomor yang pernah checkout. Nomor lain tidak diproses. Bot juga hanya mengirim rincian pesanan kalau nomor pengirim cocok dengan nomor pemesan.",
       },
       {
-        q: "Bisa tukar ukuran atau warna?",
-        a: "Selama pesanan belum diserahkan ke kurir, bisa kami ubah. Setelah diterima, penukaran berlaku maksimal 3 hari dan barang belum dipakai.",
+        q: "Barang bermasalah, apa yang harus saya lakukan?",
+        a: "Kirim nomor pesanan dan foto barang lewat WhatsApp. Belum ada formulir pengembalian otomatis, jadi setiap kasus dicek manual. Jangan kirim barang kembali sebelum ada konfirmasi.",
       },
       {
         q: "Apakah ada garansi perbaikan?",
-        a: "Jahitan dan fitting kami tanggung selama 6 bulan. Biaya jasa tidak dipungut; biaya kirim bolak-balik ditanggung pemilik barang.",
+        a: "Belum ada program garansi resmi. Kalau barang bermasalah, tanyakan lewat WhatsApp. Kami akan bilang apakah bisa diperbaiki dan apa yang dibutuhkan.",
+      },
+      {
+        q: "Data saya dipakai untuk apa?",
+        a: "Nama, kontak, dan alamat dipakai untuk memproses pesanan dan mengirim kabar soal pesanan itu. Tidak ada pelacak iklan dan tidak ada newsletter. Data disimpan di server toko sendiri.",
       },
     ],
   },
@@ -77,18 +103,15 @@ export default async function FaqPage() {
     <div className="wrap pt-12 md:pt-16">
       <div className="grid gap-12 lg:grid-cols-[0.75fr_1.25fr] lg:gap-20">
         <header className="lg:sticky lg:top-32 lg:self-start">
-          <p className="eyebrow flex items-center gap-3">
-            <span className="h-px w-8 bg-clay" />
-            Pertanyaan umum
-          </p>
+          <p className="eyebrow">Pertanyaan umum</p>
           <h1 className="display mt-6 text-[clamp(2.4rem,5vw,3.8rem)]">
             Hal yang
             <br />
             sering ditanya.
           </h1>
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-ink-soft">
-            Kalau jawabannya belum ada di sini, tanya langsung. Kami tidak memakai
-            bot balasan.
+            Jawaban di bawah mengikuti apa yang benar-benar dilakukan toko saat
+            ini. Kalau belum ada jawabannya, tanya langsung.
           </p>
           <a
             href={await whatsappLink("Halo Toko Kita, saya mau tanya sesuatu.")}
@@ -131,8 +154,8 @@ export default async function FaqPage() {
               Masih bingung memilih ukuran atau bahan?{" "}
               <Link href="/kontak" className="link-underline text-clay">
                 Hubungi kami
-              </Link>{" "}
-              — kami biasanya bisa menyarankan berdasarkan pemakaianmu.
+              </Link>
+              . Sebutkan produk yang kamu lihat supaya jawabannya lebih cepat.
             </p>
           </div>
         </div>

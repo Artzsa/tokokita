@@ -53,8 +53,8 @@ export default async function CartPage({
           <div>
             <h2 className="display text-2xl">Keranjang masih kosong.</h2>
             <p className="mt-2 max-w-md text-sm leading-relaxed text-muted">
-              Belum ada yang dipilih. Mulai dari katalog — semuanya dibuat dalam
-              jumlah kecil, jadi stok bisa cepat habis.
+              Belum ada yang dipilih. Mulai dari katalog; jumlah yang tersedia
+              tampil di tiap produk.
             </p>
           </div>
           <Link href="/produk" className="btn btn-solid">

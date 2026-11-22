@@ -11,8 +11,6 @@ export const config = {
   dryRun: true,
   loginMethod: "qr" as "qr" | "pairing",
   pairNumber: "",
-  allowedNumbersRaw: "",
-  allowedNumbers: [] as string[],
   pollMs: 5000,
   maxAttempts: 3,
 };
@@ -23,11 +21,6 @@ export async function refreshConfig() {
   config.dryRun = settings.dryRun;
   config.loginMethod = settings.loginMethod;
   config.pairNumber = settings.pairNumber;
-  config.allowedNumbersRaw = settings.allowedNumbers;
-  config.allowedNumbers = settings.allowedNumbers
-    .split(",")
-    .map((value) => normalizePhone(value.trim()))
-    .filter(Boolean);
   config.pollMs = settings.pollMs;
   config.maxAttempts = settings.maxAttempts;
   return config;

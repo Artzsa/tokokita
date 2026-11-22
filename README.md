@@ -1,6 +1,6 @@
 # Toko Kita
 
-Toko online kecil yang dijalankan lokal di laptop. Katalog, keranjang, checkout manual (transfer/COD), dan panel admin — semuanya pakai Next.js + SQLite, tanpa layanan pihak ketiga.
+Toko online kecil yang dijalankan lokal di laptop. Katalog, keranjang, checkout manual (transfer/COD), dan panel admin. Semuanya pakai Next.js + SQLite, tanpa layanan pihak ketiga.
 
 ## Jalankan di laptop
 
@@ -32,7 +32,7 @@ Ganti keduanya sebelum toko dipakai sungguhan.
 - Pembayaran masih manual: transfer bank atau COD. Tidak ada gateway.
 - Status pesanan lengkap: menunggu bayar → dibayar → dikemas → dikirim → selesai, plus dibatalkan (stok otomatis dikembalikan). Pesanan pending otomatis dibatalkan setelah 3 hari.
 - Notifikasi WhatsApp untuk setiap perubahan status lewat tabel `NotificationOutbox` + bot Baileys. Pesan tidak hilang walau bot sedang mati.
-- Kartu katalog 3D memakai Three.js + React Three Fiber: gambar produk jadi tekstur kartu berketebalan yang bisa diputar dengan kursor/panah keyboard. Scene di-*lazy load*; kartu hanya memasang kanvas saat di-hover. Tanpa WebGL atau dengan `prefers-reduced-motion`, gambar statis yang tampil.
+- Kartu katalog 3D memakai Three.js + React Three Fiber: gambar produk jadi tekstur kartu berketebalan yang bisa diputar dengan kursor/panah keyboard. Scene di-*lazy load*. Di desktop, kartu katalog memasang kanvas saat di-hover; di layar sentuh dan dengan `prefers-reduced-motion`, gambar statis yang tampil.
 
 ## Skrip
 
@@ -68,16 +68,16 @@ npm run bot   # WA + worker outbox
 
 Semua pengaturan bot bisa diubah lewat **Admin → Pengaturan** (`/admin/pengaturan`) tanpa edit `.env` atau restart. Nilai tersimpan di tabel `Setting`; kalau belum ada, bot memakai nilai default dari `.env`.
 
-Sebelum pakai akun WA asli, set `BOT_DRY_RUN="true"` (atau aktifkan mode uji lewat halaman Pengaturan) dulu — bot tidak menyambung WhatsApp, tapi tetap memproses outbox (pesan ditandai terkirim di database untuk uji alur).
+Sebelum pakai akun WA asli, set `BOT_DRY_RUN="true"` (atau aktifkan mode uji lewat halaman Pengaturan) dulu. Bot tidak menyambung WhatsApp, tapi tetap memproses outbox (pesan ditandai terkirim di database untuk uji alur).
 
 Untuk pakai WA sungguhan:
 1. Set `BOT_DRY_RUN="false"`.
 2. Pilih login QR (`BOT_LOGIN_METHOD="qr"`) atau pairing (`BOT_LOGIN_METHOD="pairing"` + `BOT_PAIR_NUMBER="62..."`).
-3. Isi `BOT_ALLOWED_NUMBERS` dengan nomor yang boleh dibalas bot (format `62...`, pisah koma). Ini hanya untuk **chat masuk**; notifikasi keluar tetap dikirim ke nomor pembeli dari database.
+3. Nomor yang boleh dibalas bot diambil dari nomor HP pada pesanan (`Order.phone`). Tidak ada daftar terpisah; pastikan pelanggan mengisi nomor WhatsApp yang benar saat checkout. Nomor lain diabaikan.
 4. Jalankan `npm run bot`, scan QR / masukkan kode pairing sekali saja. Sesi tersimpan di `bot/session/` yang sudah di-gitignore.
 
 Bot melakukan:
-- membalas FAQ singkat & cek status pesanan (nomor `TK-YYMMDD-XXXX`, hanya untuk nomor pemesan yang cocok),
+- membalas FAQ singkat & cek status pesanan (nomor `TK-YYMMDD-XXXX`) hanya untuk nomor yang pernah checkout dan cocok dengan nomor pemesan,
 - mengirim pesan dari `NotificationOutbox` ke WA pembeli, retry maksimal 3x,
 - membatalkan otomatis pesanan `pending` yang lewat 3 hari dan mengembalikan stoknya.
 

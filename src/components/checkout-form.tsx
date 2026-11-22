@@ -200,8 +200,8 @@ export function CheckoutForm() {
                 Transfer bank
               </span>
               <span className="mt-1 block text-xs leading-relaxed text-muted">
-                Instruksi rekening muncul setelah pesanan dibuat. Konfirmasi
-                lewat WhatsApp.
+                Nomor rekening dikirim admin lewat WhatsApp. Konfirmasi
+                pembayaran juga lewat WhatsApp.
               </span>
             </span>
           </label>
@@ -219,8 +219,8 @@ export function CheckoutForm() {
                 Bayar di tempat (COD)
               </span>
               <span className="mt-1 block text-xs leading-relaxed text-muted">
-                Bayar tunai saat barang diterima. Tersedia untuk wilayah
-                tertentu.
+                Bayar tunai saat barang diterima. Admin akan mengonfirmasi
+                lewat WhatsApp.
               </span>
             </span>
           </label>

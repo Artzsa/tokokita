@@ -17,7 +17,7 @@ export function userFromJid(jid: string | null | undefined) {
 /**
  * WhatsApp kini mengirim chat lewat identitas LID (15 digit, `...@lid`).
  * Nomor HP asli dikirim di `senderPn`, jadi whitelist dan balasan harus
- * memakai nomor itu — bukan angka LID-nya.
+ * memakai nomor itu, bukan angka LID-nya.
  */
 export function resolveSender(message: WAMessage): SenderIdentity {
   const remoteJid = message.key.remoteJid ?? "";

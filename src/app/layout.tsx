@@ -19,11 +19,11 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   ),
   title: {
-    default: "Toko Kita — Benda harian yang dibuat untuk dipakai lama",
-    template: "%s — Toko Kita",
+    default: "Toko Kita · Benda harian untuk dipakai lama",
+    template: "%s · Toko Kita",
   },
   description:
-    "Perkakas rumah, tas, dan alat kerja dari pengrajin kecil di Jawa. Bahan jujur, jahitan rapi, harga terbuka.",
+    "Toko online kecil untuk perkakas rumah, tas, dan alat kerja. Checkout tanpa akun, stok dihitung dari sisa, pembayaran transfer atau COD.",
 };
 
 export const viewport: Viewport = {

@@ -8,7 +8,7 @@ export default function NotFound() {
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="wrap flex flex-1 flex-col justify-center py-24">
-        <p className="eyebrow">404 — tidak ditemukan</p>
+        <p className="eyebrow">404 · tidak ditemukan</p>
         <h1 className="display mt-6 text-[clamp(3rem,8vw,6rem)]">
           Halaman ini
           <br />
@@ -16,7 +16,7 @@ export default function NotFound() {
         </h1>
         <p className="mt-6 max-w-md text-[15px] leading-relaxed text-ink-soft">
           Mungkin tautannya salah ketik, atau produknya sudah tidak dijual. Coba
-          mulai dari katalog — stok berubah setiap minggu.
+          mulai dari katalog untuk melihat barang yang masih tersedia.
         </p>
         <div className="mt-9 flex flex-wrap gap-3">
           <Link href="/produk" className="btn btn-solid">

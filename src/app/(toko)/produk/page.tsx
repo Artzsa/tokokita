@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
-import { ArrowRight, SearchX } from "lucide-react";
+import { SearchX } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
 import { prisma } from "@/lib/db";
+import { formatIDR } from "@/lib/format";
+import { store } from "@/lib/store";
 
 export const metadata: Metadata = {
   title: "Katalog",
@@ -58,20 +60,46 @@ export default async function CatalogPage({
         ? { price: "desc" }
         : urut === "nama"
           ? { name: "asc" }
-          : urut === "laris"
-            ? { orderItems: { _count: "desc" } }
-            : { createdAt: "desc" };
+          : { createdAt: "desc" };
 
   const [categories, products] = await Promise.all([
     prisma.category.findMany({
       orderBy: { position: "asc" },
       include: { _count: { select: { products: true } } },
     }),
-    prisma.product.findMany({
-      where,
-      include: { images: { orderBy: { position: "asc" } } },
-      orderBy,
-    }),
+    (async () => {
+      const include = { images: { orderBy: { position: "asc" as const } } };
+
+      if (urut !== "laris") {
+        return prisma.product.findMany({ where, include, orderBy });
+      }
+
+      const sales = await prisma.orderItem.groupBy({
+        by: ["productId"],
+        where: {
+          productId: { not: null },
+          order: { status: { not: "cancelled" } },
+        },
+        _sum: { qty: true },
+      });
+
+      const ranked = sales
+        .filter((row) => row.productId)
+        .sort((a, b) => (b._sum.qty ?? 0) - (a._sum.qty ?? 0))
+        .map((row) => row.productId as string);
+
+      if (ranked.length === 0) return [];
+
+      const rows = await prisma.product.findMany({
+        where: { ...where, id: { in: ranked } },
+        include,
+      });
+      const byId = new Map(rows.map((product) => [product.id, product]));
+
+      return ranked
+        .map((id) => byId.get(id))
+        .filter((product): product is (typeof rows)[number] => Boolean(product));
+    })(),
   ]);
 
   const activeCategory = categories.find((category) => category.slug === kategori);
@@ -97,14 +125,14 @@ export default async function CatalogPage({
     <div className="wrap pt-12 md:pt-16">
       <header className="grid gap-8 border-b border-line pb-8 lg:grid-cols-[1fr_auto] lg:items-end">
         <div>
-          <p className="eyebrow">Katalog {new Date().getFullYear()}</p>
+          <p className="eyebrow">Katalog</p>
           <h1 className="display mt-4 text-[clamp(2.6rem,6vw,4.6rem)]">
             {activeCategory ? activeCategory.name : "Semua benda"}
           </h1>
           <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-ink-soft">
             {activeCategory
               ? activeCategory.blurb
-              : "Dibuat dalam batch kecil, diuji sebelum dijual, dan bisa diperbaiki kalau rusak. Harga sudah termasuk kemasan kertas."}
+              : `Stok yang tampil adalah sisa yang tersimpan. Ongkir dihitung sekali di checkout, gratis di atas ${formatIDR(store.freeShippingThreshold)}.`}
           </p>
         </div>
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
@@ -141,6 +169,9 @@ export default async function CatalogPage({
             {kategori ? (
               <input type="hidden" name="kategori" value={kategori} />
             ) : null}
+            {urut !== "baru" ? (
+              <input type="hidden" name="urut" value={urut} />
+            ) : null}
             <input
               type="search"
               name="q"
@@ -151,7 +182,7 @@ export default async function CatalogPage({
             />
             <button
               type="submit"
-              className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:text-ink"
+              className="px-3 py-2 text-[12px] font-medium text-ink-soft hover:text-ink"
             >
               Cari
             </button>
@@ -179,7 +210,7 @@ export default async function CatalogPage({
             </select>
             <button
               type="submit"
-              className="border border-line px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft hover:border-ink hover:text-ink"
+              className="border border-line px-3 py-2 text-[12px] font-medium text-ink-soft hover:border-ink hover:text-ink"
             >
               Terapkan
             </button>
@@ -196,7 +227,7 @@ export default async function CatalogPage({
           {q ? <span className="tag">“{q}”</span> : null}
           <Link
             href="/produk"
-            className="link-underline text-[11px] uppercase tracking-[0.12em] text-clay"
+            className="link-underline text-[12px] font-medium text-clay"
           >
             Bersihkan
           </Link>
@@ -219,19 +250,26 @@ export default async function CatalogPage({
         <div className="mt-16 flex flex-col items-start gap-6 border border-dashed border-line px-8 py-16">
           <SearchX size={28} strokeWidth={1.2} className="text-clay" />
           <div>
-            <h2 className="display text-2xl">Belum ada yang cocok.</h2>
+            <h2 className="display text-2xl">
+              {urut === "laris"
+                ? "Belum ada penjualan yang tercatat."
+                : "Belum ada yang cocok."}
+            </h2>
             <p className="mt-2 max-w-md text-sm leading-relaxed text-muted">
-              Coba kata kunci lain, atau lihat seluruh katalog. Kalau barang yang
-              kamu cari belum ada, bilang saja — kadang kami bisa buatkan.
+              {urut === "laris"
+                ? "Urutan paling dipesan dihitung dari unit yang benar-benar terjual. Setelah ada pesanan, daftar ini terisi."
+                : "Coba kata kunci lain, atau lihat seluruh katalog. Kalau barang yang kamu cari belum ada, tanya lewat WhatsApp."}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/produk" className="btn btn-solid">
-              Lihat semua produk
+            <Link
+              href={urut === "laris" ? "/produk?urut=baru" : "/produk"}
+              className="btn btn-solid"
+            >
+              {urut === "laris" ? "Lihat yang terbaru" : "Lihat semua produk"}
             </Link>
             <Link href="/kontak" className="btn btn-ghost">
-              Minta produk
-              <ArrowRight size={14} />
+              Tanya lewat WhatsApp
             </Link>
           </div>
         </div>

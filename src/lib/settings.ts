@@ -30,7 +30,7 @@ function defaults(): Settings {
     allowedNumbers: process.env.BOT_ALLOWED_NUMBERS ?? "",
     welcomeMessage:
       process.env.BOT_WELCOME_MESSAGE ??
-      "Halo! Saya bot Toko Kita. Saya bisa bantu cek pesanan, ongkir, pembayaran, retur, dan jam buka.",
+      "Halo! Saya bot Toko Kita. Saya bisa bantu cek pesanan, ongkir, pembayaran, dan pengembalian.",
     pollMs: number(process.env.BOT_POLL_MS, 5000),
     maxAttempts: number(process.env.BOT_MAX_ATTEMPTS, 3),
   };

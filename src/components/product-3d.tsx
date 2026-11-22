@@ -28,11 +28,17 @@ export function Product3D({
   const [ready, setReady] = useState(false);
   const [hovered, setHovered] = useState(false);
   const tilt = useRef<SceneTilt>({ x: 0, y: 0 });
+  const invalidateScene = useRef<(() => void) | null>(null);
   const dragging = useRef(false);
   const lastPoint = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    // Layar sentuh kecil memakai gambar biasa supaya canvas tidak membebani.
+    const finePointer = window.matchMedia("(pointer: fine)").matches;
+    const wideEnough = window.matchMedia("(min-width: 768px)").matches;
+    if (!finePointer || !wideEnough) return;
 
     const probe = document.createElement("canvas");
     const supported = Boolean(
@@ -66,6 +72,7 @@ export function Product3D({
         0.55,
       );
       lastPoint.current = { x: event.clientX, y: event.clientY };
+      invalidateScene.current?.();
       return;
     }
 
@@ -74,6 +81,7 @@ export function Product3D({
     const ny = ((event.clientY - rect.top) / rect.height) * 2 - 1;
     tilt.current.y = nx * 0.32;
     tilt.current.x = -ny * 0.18;
+    invalidateScene.current?.();
   }
 
   function stopDragging(event: React.PointerEvent<HTMLDivElement>) {
@@ -94,6 +102,7 @@ export function Product3D({
     event.preventDefault();
     tilt.current.y = clamp(tilt.current.y, -1.1, 1.1);
     tilt.current.x = clamp(tilt.current.x, -0.55, 0.55);
+    invalidateScene.current?.();
   }
 
   return (
@@ -111,6 +120,7 @@ export function Product3D({
         setHovered(false);
         dragging.current = false;
         tilt.current = { x: 0, y: 0 };
+        invalidateScene.current?.();
       }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
@@ -137,7 +147,7 @@ export function Product3D({
           style={{ opacity: ready ? 1 : 0 }}
           aria-hidden="true"
         >
-          <CatalogScene src={src} tilt={tilt} onReady={handleReady} />
+          <CatalogScene src={src} tilt={tilt} onReady={handleReady} invalidateRef={invalidateScene} />
         </div>
       ) : null}
 

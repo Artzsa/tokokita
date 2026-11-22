@@ -5,10 +5,10 @@ import { getCartCount } from "@/lib/cart";
 import { store } from "@/lib/store";
 
 const ticker = [
-  "Gratis ongkir di atas Rp500.000",
-  "Dikirim dari Yogyakarta",
-  "Pesanan diproses 1–2 hari kerja",
+  "Checkout tanpa akun",
   "Bayar transfer atau COD",
+  "Konfirmasi lewat WhatsApp",
+  "Gratis ongkir di atas Rp 500.000",
 ];
 
 const links = [
@@ -23,32 +23,25 @@ export async function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur">
-      <div className="tk-ticker overflow-hidden bg-ink text-paper">
-        <div className="tk-marquee-track">
-          {[0, 1].map((copy) => (
-            <div
-              key={copy}
-              className="flex shrink-0 items-center py-2 text-[10px] font-semibold uppercase tracking-[0.22em]"
-              aria-hidden={copy === 1}
-            >
-              {ticker.map((item) => (
-                <span key={item} className="flex items-center">
-                  <span className="px-6">{item}</span>
-                  <span className="text-clay">/</span>
+      <div className="tk-ticker bg-ink text-paper">
+        <div className="wrap flex flex-wrap items-center gap-x-5 gap-y-1 py-2 text-[11px] font-medium tracking-[0.04em]">
+          {ticker.map((item, index) => (
+            <span key={item} className="flex items-center gap-5">
+              {item}
+              {index < ticker.length - 1 ? (
+                <span className="text-clay/70" aria-hidden="true">
+                  /
                 </span>
-              ))}
-            </div>
+              ) : null}
+            </span>
           ))}
         </div>
       </div>
 
       <div className="wrap flex h-[74px] items-center justify-between gap-6">
-        <Link href="/" className="group flex items-baseline gap-3">
+        <Link href="/" className="group">
           <span className="display text-[27px] leading-none transition-colors group-hover:text-clay">
             {store.name}
-          </span>
-          <span className="hidden text-[9px] font-semibold uppercase tracking-[0.24em] text-muted sm:block">
-            est. {store.established}
           </span>
         </Link>
 
@@ -74,7 +67,7 @@ export async function SiteHeader() {
           </Link>
           <Link
             href="/keranjang"
-            className="group flex items-center gap-2 rounded-full border border-line px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors hover:border-ink"
+            className="group flex min-h-11 items-center gap-2 rounded-full border border-line px-4 text-[12px] font-medium transition-colors hover:border-ink"
           >
             <span className="hidden sm:inline">Keranjang</span>
             <span className="sm:hidden">Tas</span>
@@ -89,7 +82,7 @@ export async function SiteHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className="whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-soft"
+              className="whitespace-nowrap py-1 text-[12px] font-medium text-ink-soft"
             >
               {link.label}
             </Link>

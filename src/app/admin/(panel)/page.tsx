@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { DashboardRange } from "@/components/admin/dashboard-range";
 import { requireAdmin } from "@/lib/auth";
@@ -8,6 +8,13 @@ import { formatDateTime, formatIDR } from "@/lib/format";
 import { getDashboardData, parseRange, rangeLabel } from "@/lib/dashboard";
 
 export const metadata: Metadata = { title: "Ringkasan" };
+
+type ActionItem = {
+  label: string;
+  detail: string;
+  count: number;
+  href: string;
+};
 
 export default async function AdminDashboardPage({
   searchParams,
@@ -19,26 +26,45 @@ export default async function AdminDashboardPage({
   const range = parseRange(params.range);
   const data = await getDashboardData(range);
 
-  const actionItems = [
-    {
+  const actionItems: ActionItem[] = [];
+
+  if (data.pendingCount > 0) {
+    actionItems.push({
       label: "Menunggu pembayaran",
+      detail: "Cek transfer, lalu ubah status atau batalkan pesanan.",
       count: data.pendingCount,
       href: "/admin/pesanan?status=pending",
-      tone: "text-clay-deep",
-    },
-    {
+    });
+  }
+
+  if (data.paidCount > 0) {
+    actionItems.push({
       label: "Dibayar, belum dikemas",
+      detail: "Siapkan barang dan catat nomor pengiriman.",
       count: data.paidCount,
       href: "/admin/pesanan?status=paid",
-      tone: "text-moss",
-    },
-    {
-      label: "Sudah dikirim",
-      count: data.shippedCount,
-      href: "/admin/pesanan?status=shipped",
-      tone: "text-ink",
-    },
-  ];
+    });
+  }
+
+  if (data.lowStockCount > 0) {
+    actionItems.push({
+      label: "Stok menipis atau habis",
+      detail: "Produk aktif dengan sisa lima unit atau kurang.",
+      count: data.lowStockCount,
+      href: "/admin/produk?stok=menipis",
+    });
+  }
+
+  if (data.outbox.failed > 0) {
+    actionItems.push({
+      label: "Pesan bot gagal terkirim",
+      detail: "Pesan gagal setelah batas percobaan. Cek status bot, lalu hubungi pelanggan manual.",
+      count: data.outbox.failed,
+      href: "/admin/pengaturan",
+    });
+  }
+
+  const botConnected = data.botStatus === "connected";
 
   return (
     <div className="px-5 py-8 md:px-10 md:py-10">
@@ -49,54 +75,119 @@ export default async function AdminDashboardPage({
             Halo, {admin.name.split(" ")[0]}.
           </h1>
           <p className="mt-2 text-[13px] text-muted">
-            Data diambil langsung dari database. Rentang: {data.label}.
+            Mulai dari yang perlu dikerjakan, lalu lihat angka {rangeLabel(range).toLowerCase()}.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <DashboardRange current={range} />
-          <div className="flex flex-wrap gap-2">
-            <Link href="/admin/produk/baru" className="btn btn-solid">
-              <Plus size={14} />
-              Produk baru
-            </Link>
-            <Link href="/admin/pesanan" className="btn btn-ghost">
-              Semua pesanan
-            </Link>
-          </div>
+          <Link href="/admin/produk/baru" className="btn btn-solid">
+            <Plus size={14} />
+            Produk baru
+          </Link>
         </div>
       </header>
 
-      <dl className="mt-6 grid gap-px border border-line bg-line sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mt-6 flex flex-wrap items-center justify-between gap-3 border border-line px-4 py-3">
+        <p className="flex flex-wrap items-center gap-2 text-[12px]">
+          <span
+            aria-hidden="true"
+            className={`inline-block size-2 rounded-full ${
+              botConnected ? "bg-moss" : "bg-clay"
+            }`}
+          />
+          <span className="font-medium">
+            Bot WhatsApp {botConnected ? "tersambung" : "belum tersambung"}
+          </span>
+          <span className="text-muted">
+            Outbox {data.outbox.pending} menunggu, {data.outbox.sent} terkirim,{" "}
+            {data.outbox.failed} gagal
+          </span>
+        </p>
+        <Link
+          href="/admin/pengaturan"
+          className="link-underline text-[12px] font-medium text-ink-soft hover:text-ink"
+        >
+          Atur bot
+        </Link>
+      </section>
+
+      <section className="mt-8" aria-labelledby="perlu-dikerjakan">
+        <div className="flex items-end justify-between gap-4 border-b border-line pb-3">
+          <h2
+            id="perlu-dikerjakan"
+            className="text-[12px] font-semibold uppercase tracking-[0.12em]"
+          >
+            Perlu dikerjakan
+          </h2>
+          {actionItems.length > 0 ? (
+            <p className="text-[11px] text-muted">
+              {actionItems.reduce((sum, item) => sum + item.count, 0)} item
+            </p>
+          ) : null}
+        </div>
+
+        {actionItems.length === 0 ? (
+          <div className="border-b border-line py-8">
+            <p className="text-sm font-medium">Tidak ada yang menunggu.</p>
+            <p className="mt-1 max-w-md text-[13px] leading-relaxed text-muted">
+              Pesanan baru, stok menipis, dan pesan bot yang gagal akan muncul
+              di bagian ini.
+            </p>
+          </div>
+        ) : (
+          <div>
+            {actionItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="group grid grid-cols-[3rem_1fr_auto] items-center gap-4 border-b border-line py-5 transition-colors hover:bg-paper-deep/40"
+              >
+                <span className="display text-3xl tabular-nums text-clay">
+                  {item.count}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[14px] font-medium">
+                    {item.label}
+                  </span>
+                  <span className="mt-0.5 block text-[12px] leading-relaxed text-muted">
+                    {item.detail}
+                  </span>
+                </span>
+                <span className="text-[12px] font-medium text-ink-soft underline-offset-4 group-hover:underline">
+                  Buka
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <dl className="mt-8 grid gap-px border border-line bg-line sm:grid-cols-3">
         <div className="bg-paper p-5">
-          <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+          <dt className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
             Pendapatan
           </dt>
           <dd className="display mt-2 text-2xl tabular-nums">
             {formatIDR(data.revenue)}
           </dd>
-          <p className="mt-2 text-[11px] text-muted">Status dibayar ke atas</p>
+          <p className="mt-2 text-[11px] text-muted">
+            Status dibayar ke atas, {rangeLabel(range).toLowerCase()}
+          </p>
         </div>
         <div className="bg-paper p-5">
-          <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+          <dt className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
             Pesanan
           </dt>
           <dd className="display mt-2 text-2xl tabular-nums">
             {data.orderCount}
           </dd>
-          <p className="mt-2 text-[11px] text-muted">Tidak dibatalkan</p>
+          <p className="mt-2 text-[11px] text-muted">
+            Tidak termasuk pesanan yang dibatalkan
+          </p>
         </div>
         <div className="bg-paper p-5">
-          <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-            Menunggu bayar
-          </dt>
-          <dd className="display mt-2 text-2xl tabular-nums">
-            {data.pendingCount}
-          </dd>
-          <p className="mt-2 text-[11px] text-muted">Perlu dicek & konfirmasi</p>
-        </div>
-        <div className="bg-paper p-5">
-          <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+          <dt className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
             Produk aktif
           </dt>
           <dd className="display mt-2 text-2xl tabular-nums">
@@ -106,78 +197,23 @@ export default async function AdminDashboardPage({
         </div>
       </dl>
 
-      <section className="mt-6 border border-line bg-paper-deep/40 p-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-              WhatsApp bot
-            </p>
-            <p className="mt-1 flex items-center gap-2 text-[13px] font-medium">
-              <span
-                className={`inline-block size-2 rounded-full ${
-                  data.botStatus === "connected" ? "bg-moss" : "bg-clay"
-                }`}
-              />
-              {data.botStatus === "connected"
-                ? "Tersambung"
-                : data.botStatus === "offline"
-                  ? "Mati"
-                  : data.botStatus}
-            </p>
-            <p className="mt-1 text-[11px] text-muted">
-              Outbox: {data.outbox.pending} menunggu · {data.outbox.sent} terkirim ·{" "}
-              {data.outbox.failed} gagal
-            </p>
-          </div>
-          <Link href="/admin/pengaturan" className="btn btn-ghost">
-            Atur bot
-            <ArrowRight size={14} />
-          </Link>
-        </div>
-      </section>
-
-      <section className="mt-8">
-        <div className="border-b border-line pb-3">
-          <h2 className="text-[12px] font-semibold uppercase tracking-[0.14em]">
-            Butuh tindakan
-          </h2>
-        </div>
-        <div className="grid gap-px border border-line bg-line sm:grid-cols-3">
-          {actionItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className="group bg-paper p-5 transition-colors hover:bg-paper-deep/50"
-            >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
-                {item.label}
-              </p>
-              <p className={`display mt-3 text-3xl tabular-nums ${item.tone}`}>
-                {item.count}
-              </p>
-              <p className="mt-3 flex items-center gap-1 text-[11px] text-muted group-hover:text-ink">
-                Buka
-                <ArrowUpRight size={12} />
-              </p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <div className="mt-8 grid gap-8 xl:grid-cols-2">
+      <div className="mt-10 grid gap-10 xl:grid-cols-2">
         <section>
-          <div className="flex items-end justify-between border-b border-line pb-3">
-            <h2 className="text-[12px] font-semibold uppercase tracking-[0.14em]">
+          <div className="flex items-end justify-between gap-4 border-b border-line pb-3">
+            <h2 className="text-[12px] font-semibold uppercase tracking-[0.12em]">
               Terlaris
             </h2>
-            <span className="text-[10px] uppercase tracking-[0.12em] text-muted">
-              {rangeLabel(range)} · quantity
+            <span className="text-[11px] text-muted">
+              {rangeLabel(range)} · jumlah unit
             </span>
           </div>
           {data.topProducts.length === 0 ? (
-            <p className="border-b border-line py-10 text-sm text-muted">
-              Belum ada penjualan di rentang ini.
-            </p>
+            <div className="border-b border-line py-8">
+              <p className="text-sm">Belum ada penjualan di rentang ini.</p>
+              <p className="mt-1 text-[12px] text-muted">
+                Ubah rentang ke semua waktu kalau ingin melihat data lama.
+              </p>
+            </div>
           ) : (
             <ol className="border-b border-line">
               {data.topProducts.map((product, index) => (
@@ -185,8 +221,8 @@ export default async function AdminDashboardPage({
                   key={product.name}
                   className="grid grid-cols-[auto_1fr_auto] items-center gap-4 border-t border-line py-4 text-[13px]"
                 >
-                  <span className="display text-lg text-muted">
-                    0{index + 1}
+                  <span className="display w-6 text-lg text-muted">
+                    {index + 1}
                   </span>
                   <span className="min-w-0 truncate">{product.name}</span>
                   <span className="tabular-nums text-ink-soft">
@@ -199,18 +235,19 @@ export default async function AdminDashboardPage({
         </section>
 
         <section>
-          <div className="flex items-end justify-between border-b border-line pb-3">
-            <h2 className="text-[12px] font-semibold uppercase tracking-[0.14em]">
+          <div className="flex items-end justify-between gap-4 border-b border-line pb-3">
+            <h2 className="text-[12px] font-semibold uppercase tracking-[0.12em]">
               Penjualan per kategori
             </h2>
-            <span className="text-[10px] uppercase tracking-[0.12em] text-muted">
-              {rangeLabel(range)}
-            </span>
+            <span className="text-[11px] text-muted">{rangeLabel(range)}</span>
           </div>
           {data.categories.length === 0 ? (
-            <p className="border-b border-line py-10 text-sm text-muted">
-              Belum ada data penjualan.
-            </p>
+            <div className="border-b border-line py-8">
+              <p className="text-sm">Belum ada data penjualan.</p>
+              <p className="mt-1 text-[12px] text-muted">
+                Kategori muncul setelah ada item yang terjual.
+              </p>
+            </div>
           ) : (
             <ul className="border-b border-line">
               {data.categories.map((category) => {
@@ -227,12 +264,12 @@ export default async function AdminDashboardPage({
                     key={category.name}
                     className="border-t border-line py-4 text-[13px]"
                   >
-                    <div className="grid grid-cols-[1fr_auto_auto] items-center gap-4">
+                    <div className="grid grid-cols-[1fr_auto] items-baseline gap-x-4 gap-y-1 sm:grid-cols-[1fr_auto_auto]">
                       <span className="truncate">{category.name}</span>
                       <span className="tabular-nums text-muted">
                         {category.qty} unit
                       </span>
-                      <span className="tabular-nums font-medium">
+                      <span className="tabular-nums font-medium sm:text-right">
                         {formatIDR(category.revenue)}
                         <span className="ml-2 text-[10px] text-muted">
                           {share}%
@@ -253,28 +290,38 @@ export default async function AdminDashboardPage({
         </section>
       </div>
 
-      <section className="mt-8">
+      <section className="mt-10">
         <div className="flex items-end justify-between gap-4 border-b border-line pb-3">
-          <h2 className="text-[12px] font-semibold uppercase tracking-[0.14em]">
+          <h2 className="text-[12px] font-semibold uppercase tracking-[0.12em]">
             Pesanan terbaru
           </h2>
           <Link
             href="/admin/pesanan"
-            className="link-underline text-[11px] font-semibold uppercase tracking-[0.12em] text-muted"
+            className="link-underline text-[12px] font-medium text-muted hover:text-ink"
           >
             Lihat semua
           </Link>
         </div>
 
         {data.recentOrders.length === 0 ? (
-          <p className="border-b border-line py-10 text-sm text-muted">
-            Belum ada pesanan masuk.
-          </p>
+          <div className="border-b border-line py-8">
+            <p className="text-sm">Belum ada pesanan masuk.</p>
+            <p className="mt-1 text-[12px] text-muted">
+              Pesanan pertama akan muncul di sini setelah ada yang checkout.
+            </p>
+            <Link
+              href="/"
+              target="_blank"
+              className="link-underline mt-3 inline-block text-[12px] font-medium text-clay"
+            >
+              Buka toko
+            </Link>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[620px] border-collapse text-left">
               <thead>
-                <tr className="border-b border-line text-[10px] uppercase tracking-[0.12em] text-muted">
+                <tr className="border-b border-line text-[10px] uppercase tracking-[0.1em] text-muted">
                   <th className="py-3 pr-4 font-semibold">Nomor</th>
                   <th className="py-3 pr-4 font-semibold">Pemesan</th>
                   <th className="py-3 pr-4 font-semibold">Tanggal</th>
@@ -319,7 +366,6 @@ export default async function AdminDashboardPage({
           </div>
         )}
       </section>
-
     </div>
   );
 }

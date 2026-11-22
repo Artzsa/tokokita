@@ -16,22 +16,16 @@ export function Reveal({
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
-
-    const show = () => node.classList.add("is-visible");
-
-    if (typeof IntersectionObserver === "undefined") {
-      show();
-      return;
-    }
+    if (typeof IntersectionObserver === "undefined") return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          show();
+          node.classList.add("is-visible");
           observer.disconnect();
         }
       },
-      { rootMargin: "0px 0px -6% 0px", threshold: 0.06 },
+      { rootMargin: "0px 0px -5% 0px", threshold: 0.01 },
     );
 
     observer.observe(node);

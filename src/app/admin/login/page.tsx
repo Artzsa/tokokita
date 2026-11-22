@@ -5,7 +5,6 @@ import { ArrowLeft } from "lucide-react";
 import { LoginForm } from "@/components/admin/login-form";
 import { getAdmin } from "@/lib/auth";
 import { store } from "@/lib/store";
-
 export const metadata: Metadata = {
   title: "Masuk",
   robots: { index: false, follow: false },
@@ -19,7 +18,7 @@ export default async function LoginPage() {
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="flex flex-col justify-between bg-ink p-8 text-paper lg:p-16">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-paper/60">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-paper/60">
             Panel internal
           </p>
           <p className="display mt-3 text-3xl">{store.name}</p>
@@ -27,15 +26,17 @@ export default async function LoginPage() {
 
         <div className="my-16 hidden lg:block">
           <p className="display max-w-md text-[clamp(2rem,3.4vw,3rem)] leading-[1.1]">
-            “Barang yang baik tidak perlu diganti setiap tahun.”
+            Satu tempat untuk pesanan, stok, dan bot.
           </p>
-          <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-paper/50">
-            Catatan dari bengkel, {store.city}
+          <p className="mt-6 max-w-sm text-[13px] leading-relaxed text-paper/60">
+            Ringkasan dimulai dari pesanan yang perlu ditindaklanjuti. Produk
+            dan stok diubah dari sini, dan aturan bot dibaca ulang setiap kali
+            ada pesan masuk.
           </p>
         </div>
 
-        <p className="text-[11px] uppercase tracking-[0.16em] text-paper/45">
-          {store.address}
+        <p className="text-[11px] text-paper/45">
+          Akses khusus admin toko
         </p>
       </div>
 
@@ -66,7 +67,7 @@ export default async function LoginPage() {
 
           <Link
             href="/"
-            className="link-underline mt-8 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted"
+            className="link-underline mt-8 inline-flex items-center gap-2 text-[12px] font-medium text-muted"
           >
             <ArrowLeft size={13} />
             Kembali ke toko

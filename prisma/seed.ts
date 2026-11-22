@@ -226,7 +226,7 @@ async function main() {
           create: [
             {
               url: `/uploads/seed/${fileName}`,
-              alt: `${product.name} — foto produk`,
+              alt: `${product.name}, foto produk`,
               position: 0,
             },
           ],

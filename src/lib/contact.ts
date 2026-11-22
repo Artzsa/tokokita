@@ -12,7 +12,8 @@ export async function getStoreWhatsapp() {
   const raw =
     settings.pairNumber ||
     settings.allowedNumbers.split(",")[0] ||
-    "6283822144337";
+    process.env.BOT_PAIR_NUMBER ||
+    "6289520223556";
   return normalizePhone(raw);
 }
 

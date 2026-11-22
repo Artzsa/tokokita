@@ -63,7 +63,7 @@ export default async function SettingsPage() {
         </h1>
         <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted">
           Atur notifikasi dan koneksi WhatsApp bot. Nilai disimpan di database dan
-          dibaca bot langsung pada siklus berikutnya — tidak perlu edit file atau
+          dibaca bot langsung pada siklus berikutnya. Tidak perlu edit file atau
           restart server.
         </p>
       </header>

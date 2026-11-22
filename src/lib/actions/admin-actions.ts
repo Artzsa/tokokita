@@ -182,7 +182,7 @@ export async function saveProductAction(
   if (!categoryId) errors.categoryId = "Pilih kategori produk.";
   if (tagline.length < 4) errors.tagline = "Tulis satu kalimat pendek sebagai ringkasan.";
   if (description.length < 20)
-    errors.description = "Deskripsi minimal 20 karakter — jelaskan bahan dan pemakaiannya.";
+    errors.description = "Deskripsi minimal 20 karakter. Jelaskan bahan dan pemakaiannya.";
   if (price <= 0) errors.price = "Harga harus lebih dari 0.";
   if (compareAtRaw && (!compareAt || compareAt <= price)) {
     errors.compareAt = "Harga sebelum diskon harus lebih tinggi dari harga jual.";

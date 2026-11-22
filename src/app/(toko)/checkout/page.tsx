@@ -16,18 +16,18 @@ export const metadata: Metadata = {
 const reassurances = [
   {
     icon: Truck,
-    title: "Dikirim 1–2 hari kerja",
-    body: `Dari ${store.city}, dikemas dengan kertas dan serat kayu.`,
+    title: "Ongkir dihitung sekali",
+    body: `Tetap ${formatIDR(store.flatShipping)}, gratis di atas ${formatIDR(store.freeShippingThreshold)}.`,
   },
   {
     icon: Package,
-    title: "Bisa ambil di bengkel",
-    body: "Pilih COD atau tulis di catatan kalau mau ambil sendiri.",
+    title: "Checkout tanpa akun",
+    body: "Isi data penerima, pesanan langsung dibuat dan mendapat nomor.",
   },
   {
     icon: ShieldCheck,
-    title: "Rusak saat kirim? Kami ganti",
-    body: "Laporkan dalam 3 hari dengan foto, kami kirim unit baru.",
+    title: "Pembayaran dikonfirmasi manual",
+    body: "Pilih transfer atau COD. Instruksi transfer dikirim lewat WhatsApp.",
   },
 ];
 
@@ -44,7 +44,7 @@ export default async function CheckoutPage() {
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink-soft">
           Isi data penerima. Setelah pesanan dibuat, kamu akan melihat nomor
-          pesanan dan instruksi pembayaran. Tidak ada pembayaran online di
+          pesanan dan langkah pembayaran. Tidak ada pembayaran online di
           halaman ini.
         </p>
       </header>
@@ -63,7 +63,7 @@ export default async function CheckoutPage() {
                   <span className="tabular-nums text-muted">{line.qty}×</span>{" "}
                   {line.name}
                   {line.variantLabel ? (
-                    <span className="text-muted"> — {line.variantLabel}</span>
+                    <span className="text-muted"> · {line.variantLabel}</span>
                   ) : null}
                 </span>
                 <span className="shrink-0 tabular-nums">
@@ -77,7 +77,7 @@ export default async function CheckoutPage() {
             cart={cart}
             note={
               <>
-                Instruksi transfer muncul di halaman pesanan. Pesanan disimpan
+                Instruksi transfer dikirim lewat WhatsApp. Pesanan disimpan
                 selama 3 hari sebelum stok dilepas kembali.
               </>
             }
@@ -106,7 +106,7 @@ export default async function CheckoutPage() {
 
           <Link
             href="/kebijakan"
-            className="link-underline mt-8 inline-block text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft"
+            className="link-underline mt-8 inline-block text-[12px] font-medium text-ink-soft"
           >
             Baca kebijakan pengiriman
           </Link>

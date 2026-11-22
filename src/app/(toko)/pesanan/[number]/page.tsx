@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Check, Copy, MessageCircle } from "lucide-react";
+import { ArrowRight, Check, MessageCircle } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { formatDateTime, formatIDR, orderStatusLabel } from "@/lib/format";
-import { store } from "@/lib/store";
 import { whatsappLink } from "@/lib/contact";
 
 export const metadata: Metadata = {
@@ -48,18 +47,20 @@ export default async function OrderPage({
 
   const steps = [
     {
-      title: isTransfer ? "Transfer sesuai total" : "Siapkan pembayaran",
+      title: isTransfer ? "Siapkan pembayaran" : "Siapkan pembayaran di tempat",
       body: isTransfer
-        ? `Transfer ke ${store.bank.name} ${store.bank.number} a.n. ${store.bank.holder}. Cantumkan nomor pesanan di berita transfer.`
+        ? "Minta nomor rekening lewat WhatsApp. Cantumkan nomor pesanan di pesan atau berita transfer."
         : "Bayar tunai saat kurir menyerahkan barang. Siapkan uang pas bila memungkinkan.",
     },
     {
       title: "Konfirmasi ke kami",
-      body: "Kirim bukti transfer lewat WhatsApp agar pesanan segera kami kemas.",
+      body: isTransfer
+        ? "Kirim bukti transfer lewat WhatsApp supaya pesanan bisa dicek dan disiapkan."
+        : "Admin akan menghubungi lewat WhatsApp untuk memastikan alamat dan waktu pengiriman.",
     },
     {
       title: "Kami kemas dan kirim",
-      body: "Diproses 1–2 hari kerja. Nomor resi dikirim lewat WhatsApp.",
+      body: "Admin menyiapkan paket dan mencatat pengiriman. Nomor resi dikirim lewat WhatsApp kalau sudah tersedia.",
     },
   ];
 
@@ -78,8 +79,8 @@ export default async function OrderPage({
             Terima kasih, {firstName}.
           </h1>
           <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-ink-soft">
-            Pesananmu sudah tercatat. Simpan nomor di bawah — kami juga akan
-            mengirim ringkasannya lewat WhatsApp ke {order.phone}.
+            Pesananmu sudah tercatat. Simpan nomor dan tautan halaman ini. Kamu
+            bisa membukanya lagi untuk melihat status dan rincian.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -215,20 +216,17 @@ export default async function OrderPage({
         <aside className="lg:sticky lg:top-32 lg:self-start">
           {isPending && isTransfer ? (
             <div className="border border-ink bg-ink p-6 text-paper">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-paper/60">
-                Transfer ke
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-paper/60">
+                Pembayaran transfer
               </p>
-              <p className="display mt-3 text-2xl">{store.bank.name}</p>
-              <p className="mt-4 flex items-center gap-3 font-mono text-lg tracking-wider">
-                {store.bank.number}
-                <Copy size={14} className="text-paper/40" />
-              </p>
-              <p className="mt-1 text-xs text-paper/60">
-                a.n. {store.bank.holder}
+              <p className="display mt-3 text-2xl">Instruksi lewat WhatsApp</p>
+              <p className="mt-3 text-[13px] leading-relaxed text-paper/70">
+                Nomor rekening dikirim admin setelah pesanan dicek. Sebutkan
+                nomor pesanan saat menghubungi.
               </p>
 
               <div className="mt-6 border-t border-paper/20 pt-4">
-                <p className="text-[10px] uppercase tracking-[0.16em] text-paper/60">
+                <p className="text-[10px] uppercase tracking-[0.14em] text-paper/60">
                   Jumlah
                 </p>
                 <p className="display mt-1 text-3xl tabular-nums">
@@ -243,7 +241,7 @@ export default async function OrderPage({
                 className="btn mt-6 w-full border-paper bg-paper text-ink hover:border-clay hover:bg-clay hover:text-paper"
               >
                 <MessageCircle size={15} />
-                Konfirmasi via WhatsApp
+                Minta instruksi transfer
               </a>
             </div>
           ) : (
@@ -273,17 +271,24 @@ export default async function OrderPage({
 
           <div className="mt-6 border border-line p-6">
             <p className="text-[13px] leading-relaxed text-ink-soft">
-              Butuh bantuan? Hubungi kami di{" "}
-              <a href={`mailto:${store.email}`} className="link-underline">
-                {store.email}
+              Butuh bantuan?{" "}
+              <a
+                href={await whatsappLink(
+                  `Halo Toko Kita, saya mau tanya soal pesanan ${order.number}.`,
+                )}
+                target="_blank"
+                rel="noreferrer"
+                className="link-underline text-clay"
+              >
+                Tanya lewat WhatsApp
               </a>{" "}
-              atau WhatsApp, {store.hours}.
+              dengan menyebut nomor pesanan.
             </p>
           </div>
 
           <Link
             href="/produk"
-            className="link-underline mt-8 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft"
+            className="link-underline mt-8 inline-flex items-center gap-2 text-[12px] font-medium text-ink-soft"
           >
             Lanjut belanja
             <ArrowRight size={13} />

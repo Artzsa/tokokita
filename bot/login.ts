@@ -70,7 +70,7 @@ async function requestPairingWithRetry(sock: WASocket, number: string) {
 
 export async function connect(): Promise<WASocket | null> {
   if (config.dryRun) {
-    console.log("[bot] mode DRY RUN — WhatsApp tidak dihubungkan.");
+    console.log("[bot] mode DRY RUN: WhatsApp tidak dihubungkan.");
     return null;
   }
 

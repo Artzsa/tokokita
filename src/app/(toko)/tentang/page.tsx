@@ -1,31 +1,27 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { store } from "@/lib/store";
 
 export const metadata: Metadata = {
   title: "Tentang",
   description:
-    "Toko Kita bekerja dengan enam bengkel kecil di Jawa. Batch kecil, bahan yang bisa dilacak, dan barang yang bisa diperbaiki.",
+    "Toko Kita adalah toko online kecil yang dijalankan sendiri. Katalog pendek, stok dihitung dari sisa, dan pesanan dikonfirmasi manual.",
 };
 
-const timeline = [
+const steps = [
   {
-    year: "2024",
-    title: "Mulai dari satu meja",
-    body: "Kami membeli 20 gelas stoneware dari bengkel di Kasongan untuk dipakai sendiri. Setengahnya diminta teman, sisanya dijual lewat pesan pribadi.",
+    title: "Pilih barang dan checkout",
+    body: "Tidak perlu membuat akun. Isi nama, nomor WhatsApp, dan alamat. Setelah pesanan dibuat, nomor pesanan langsung muncul.",
   },
   {
-    year: "2025",
-    title: "Belajar soal bahan",
-    body: "Tiga bulan kami habiskan untuk mencoba kanvas, linen, dan kulit. Banyak yang gagal: kanvas terlalu tipis, kulit mudah retak. Yang lolos uji baru masuk daftar.",
+    title: "Pembayaran dicek manual",
+    body: "Transfer bank atau COD. Admin membuka pesanan, mencocokkan pembayaran, lalu mengubah status. Tidak ada pembayaran otomatis di situs.",
   },
   {
-    year: "2026",
-    title: "Buka katalog",
-    body: `Sekarang ada ${store.name} dengan katalog kecil, dikelola dari ${store.city}. Kami masih memilih barang satu per satu.`,
+    title: "Pesanan disiapkan dan dikirim",
+    body: "Stok berkurang saat pesanan dibuat. Nomor pesanan bisa dibuka lagi kapan saja untuk melihat status dan rincian.",
   },
 ];
 
@@ -38,42 +34,36 @@ export default async function AboutPage() {
   return (
     <div>
       <section className="wrap pt-12 md:pt-16">
-        <p className="eyebrow flex items-center gap-3">
-          <span className="h-px w-8 bg-clay" />
-          Tentang kami
-        </p>
+        <p className="eyebrow">Tentang kami</p>
         <h1 className="display mt-6 max-w-4xl text-[clamp(2.6rem,6.4vw,5rem)]">
-          Kami tidak buru-buru,
+          Toko kecil,
           <br />
-          dan itu <span className="italic text-clay">disengaja</span>.
+          katalog <span className="italic text-clay">pendek</span>.
         </h1>
 
         <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_0.85fr] lg:gap-20">
           <div className="space-y-6 text-[15px] leading-relaxed text-ink-soft">
             <p className="first-letter:float-left first-letter:mr-3 first-letter:font-display first-letter:text-[64px] first-letter:leading-[0.85] first-letter:text-clay">
-              {store.name} dimulai karena kami lelah membeli barang yang terlihat
-              bagus di foto lalu rusak setelah tiga bulan. Bukan karena kami ingin
-              membangun merek besar. Kami hanya ingin tahu siapa yang membuat
-              barang kami, dari bahan apa, dan bagaimana memperbaikinya kalau
-              rusak.
+              {store.name} dijalankan sendiri. Katalognya sengaja pendek:
+              perkakas rumah, tas, dan alat kerja yang stoknya bisa dihitung
+              satu per satu.
             </p>
             <p>
-              Sekarang kami bekerja dengan enam bengkel kecil di Jawa Tengah dan
-              Yogyakarta. Semuanya usaha keluarga dengan 2–7 orang. Kami datang
-              langsung, mencoba sampel, dan menolak yang tidak lolos uji pakai
-              minimal dua minggu.
+              Tidak ada akun pelanggan dan tidak ada pembayaran otomatis. Setiap
+              pesanan dibuka oleh admin, dicek pembayarannya, lalu statusnya
+              diubah sesuai keadaan sebenarnya.
             </p>
             <p>
-              Karena itu katalog kami kecil: {productCount} produk dalam{" "}
-              {categoryCount} kategori. Kalau sesuatu habis, kami menunggu batch
-              berikutnya daripada mengganti bahan dengan yang lebih murah.
+              Saat ini ada {productCount} produk aktif dalam {categoryCount}{" "}
+              kategori. Kalau stok habis, tombol beli dimatikan sampai stok diisi
+              lagi.
             </p>
           </div>
 
           <div className="tk-hero-media relative aspect-[4/5] overflow-hidden bg-paper-deep">
             <Image
-              src="/uploads/seed/lampu-meja-kaleng.svg"
-              alt="Lampu meja kaleng di meja kerja Toko Kita"
+              src="/uploads/seed/lampu-meja-kaleng.jpg"
+              alt="Lampu meja kaleng"
               fill
               preload
               sizes="(min-width: 1024px) 40vw, 100vw"
@@ -83,44 +73,34 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      <section className="mt-20 bg-moss text-paper">
-        <div className="wrap py-20">
-          <blockquote className="mx-auto max-w-4xl">
-            <p className="display text-[clamp(1.8rem,4vw,3.2rem)] leading-[1.12]">
-              “Barang yang baik tidak perlu diganti setiap tahun. Ia hanya perlu
-              dirawat, dan kadang diperbaiki.”
-            </p>
-            <footer className="mt-8 text-[11px] font-semibold uppercase tracking-[0.18em] text-paper/60">
-              Catatan dari bengkel, {store.city}
-            </footer>
-          </blockquote>
-        </div>
-      </section>
-
       <section className="wrap mt-20">
         <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <div>
-            <p className="eyebrow">Perjalanan</p>
+            <p className="eyebrow">Cara kerja</p>
             <h2 className="display mt-4 text-[clamp(1.9rem,3.4vw,2.8rem)]">
-              Tiga tahun,
+              Dari pesanan
               <br />
-              tiga pelajaran.
+              sampai paket.
             </h2>
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted">
+              Semua langkah di bawah ini benar-benar dijalankan di panel admin.
+              Tidak ada status yang berubah sendiri.
+            </p>
           </div>
 
           <ol className="border-t border-line">
-            {timeline.map((item) => (
+            {steps.map((step, index) => (
               <li
-                key={item.year}
+                key={step.title}
                 className="grid gap-4 border-b border-line py-7 sm:grid-cols-[auto_1fr] sm:gap-10"
               >
-                <span className="display text-3xl text-clay">{item.year}</span>
+                <span className="display text-3xl text-clay">
+                  {index + 1}
+                </span>
                 <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.12em]">
-                    {item.title}
-                  </h3>
+                  <h3 className="text-[15px] font-medium">{step.title}</h3>
                   <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-                    {item.body}
+                    {step.body}
                   </p>
                 </div>
               </li>
@@ -132,19 +112,23 @@ export default async function AboutPage() {
       <section className="wrap mt-20">
         <div className="grid gap-8 border border-line p-8 md:grid-cols-[1fr_auto] md:items-center md:p-12">
           <div>
-            <p className="eyebrow">Bengkel buka untuk umum</p>
+            <p className="eyebrow">Sebelum memesan</p>
             <h2 className="display mt-3 text-[clamp(1.8rem,3vw,2.6rem)]">
-              Mampir lihat prosesnya.
+              Ada yang mau ditanyakan?
             </h2>
             <p className="mt-3 max-w-lg text-sm leading-relaxed text-muted">
-              Setiap Sabtu pagi kami buka meja kerja di {store.city}. Bisa lihat
-              bahan langsung, coba barang, atau bawa tas yang perlu dijahit ulang.
+              Soal bahan, ukuran, atau isi paket, tanya lewat WhatsApp. Pertanyaan
+              yang sering muncul sudah dirangkum di FAQ.
             </p>
           </div>
-          <Link href="/kontak" className="btn btn-solid">
-            Atur kunjungan
-            <ArrowRight size={14} />
-          </Link>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link href="/kontak" className="btn btn-solid">
+              Buka halaman kontak
+            </Link>
+            <Link href="/faq" className="btn btn-ghost">
+              Baca FAQ
+            </Link>
+          </div>
         </div>
       </section>
     </div>

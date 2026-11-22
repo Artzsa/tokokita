@@ -5,7 +5,7 @@ import { store } from "./store";
 const defaultRules = [
   {
     keywords: "ongkir, kirim, pengiriman, ekspedisi",
-    answer: `Ongkir ${formatIDR(store.flatShipping)}, gratis untuk subtotal di atas ${formatIDR(store.freeShippingThreshold)}. Pesanan diproses 1–2 hari kerja dan dikirim dari ${store.city}.`,
+    answer: `Ongkir tetap ${formatIDR(store.flatShipping)} per pesanan, gratis untuk subtotal di atas ${formatIDR(store.freeShippingThreshold)}. Pesanan disiapkan manual, jadi statusnya berubah setelah admin mencatatnya.`,
   },
   {
     keywords: "bayar, pembayaran, transfer, cod",
@@ -15,16 +15,17 @@ const defaultRules = [
   {
     keywords: "retur, rusak, komplain, tukar, garansi",
     answer:
-      "Kalau barang rusak saat kirim, lapor dalam 3 hari dengan foto. Kami ganti atau kembalikan uang. Jahitan dan fitting bergaransi 6 bulan.",
+      "Belum ada formulir pengembalian otomatis. Kirim nomor pesanan dan foto barang lewat chat ini. Jangan kirim barang kembali sebelum ada konfirmasi dari admin.",
   },
   {
     keywords: "jam, buka, kontak, alamat, lokasi, whatsapp",
-    answer: `Kami balas ${store.hours}. Bengkel di ${store.address}. Email: ${store.email}.`,
+    answer:
+      "Untuk urusan yang tidak bisa dijawab otomatis, kirim pesan di nomor ini dan tunggu balasan admin. Belum ada jam balasan tetap.",
   },
   {
     keywords: "produk, katalog, harga, barang",
     answer:
-      "Katalog berisi perkakas rumah, tas, dan alat kerja dalam batch kecil. Lihat semua produk di situs Toko Kita, atau tanya nama barang yang kamu cari.",
+      "Katalog berisi perkakas rumah, tas, dan alat kerja. Lihat semua produk dan stok terbaru di situs Toko Kita, atau sebutkan nama barang yang kamu cari.",
   },
 ];
 

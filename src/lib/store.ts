@@ -1,22 +1,11 @@
 export const store = {
   name: "Toko Kita",
   legalName: "Toko Kita Studio",
-  tagline: "Benda harian yang dibuat untuk dipakai lama.",
+  tagline: "Benda harian yang dipilih untuk dipakai lama.",
   intro:
-    "Kami membuat dan memilih perkakas rumah, tas, dan benda kecil lain yang jujur bahan, rapi jahitannya, dan tidak berhenti dipakai setelah sebulan.",
-  city: "Yogyakarta",
-  address: "Jalan Suryodiningratan 18, Yogyakarta 55141",
-  email: "halo@tokokita.test",
-  instagram: "@tokokita.studio",
-  hours: "Senin–Sabtu, 09.00–17.00 WIB",
+    "Perkakas rumah, tas, dan benda kecil lain yang dipilih satu per satu. Stok dihitung dari sisa, dan setiap pesanan dicek manual.",
   freeShippingThreshold: 500_000,
   flatShipping: 22_000,
-  bank: {
-    name: "BCA",
-    number: "1234567890",
-    holder: "Toko Kita Studio",
-  },
-  established: "2026",
 } as const;
 
 export function shippingFor(subtotal: number) {

@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type { WAMessage } from "@whiskeysockets/baileys";
 import { config, maskPhone, refreshConfig } from "./config";
-import { isKnownCustomer } from "./customers";
+import { getKnownCustomerPhones, isKnownCustomer } from "./customers";
 import { getSettings } from "../src/lib/settings";
 import { helpMessage } from "./faq";
 import { getRules, matchRule } from "../src/lib/rules";
@@ -146,8 +146,9 @@ async function main() {
     sweepExpiredOrders().catch((error) => console.error("[sweep] error:", error));
   }, config.sweepMs);
 
+  const knownPhones = await getKnownCustomerPhones();
   console.log(
-    `[bot] Siap. Poll outbox tiap ${config.pollMs} ms · whitelist ${config.allowedNumbers.length} nomor · dryRun=${config.dryRun}`,
+    `[bot] Siap. Poll outbox tiap ${config.pollMs} ms · whitelist ${knownPhones.size} nomor pelanggan · dryRun=${config.dryRun}`,
   );
 
   process.on("unhandledRejection", (reason) => {
