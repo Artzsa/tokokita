@@ -98,7 +98,9 @@ export default async function CartPage({
             <CartSummary
               cart={cart}
               note={
-                remainingForFreeShipping > 0 ? (
+                store.flatShipping === 0 ? (
+                  <>Ongkir sedang gratis untuk semua pesanan.</>
+                ) : remainingForFreeShipping > 0 ? (
                   <>
                     Tambah {formatIDR(remainingForFreeShipping)} lagi untuk
                     gratis ongkir.

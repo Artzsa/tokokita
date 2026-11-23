@@ -19,7 +19,10 @@ const reassurances = [
   {
     icon: Truck,
     title: "Ongkir dihitung sekali",
-    body: `Tetap ${formatIDR(store.flatShipping)}, gratis di atas ${formatIDR(store.freeShippingThreshold)}.`,
+    body:
+      store.flatShipping === 0
+        ? "Ongkir sedang gratis untuk semua pesanan."
+        : `Tetap ${formatIDR(store.flatShipping)}, gratis di atas ${formatIDR(store.freeShippingThreshold)}.`,
   },
   {
     icon: Package,
