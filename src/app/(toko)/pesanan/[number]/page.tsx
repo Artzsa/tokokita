@@ -6,6 +6,7 @@ import { ArrowRight, Check, MessageCircle } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { formatDateTime, formatIDR, orderStatusLabel } from "@/lib/format";
 import { whatsappLink } from "@/lib/contact";
+import { maskPhone } from "@/lib/phone";
 import { bankIsReady } from "@/lib/business";
 
 import { getSettings } from "@/lib/settings";
@@ -173,7 +174,7 @@ export default async function OrderPage({
                 <br />
                 {order.city} {order.postalCode}
                 <br />
-                {order.phone}
+                {maskPhone(order.phone)}
               </p>
             </div>
             <div>

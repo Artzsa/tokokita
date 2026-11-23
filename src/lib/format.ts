@@ -83,6 +83,13 @@ export function orderNumber(date = new Date()) {
     .slice(0, 10)
     .replace(/-/g, "")
     .slice(2);
-  const random = Math.random().toString(36).slice(2, 6).toUpperCase();
+  // 8 karakter dari alfabet tanpa karakter ambigu (0/O, 1/I).
+  // 32^8 ≈ 1,1 triliun kemungkinan per hari, jauh lebih sulit ditebak
+  // daripada 4 karakter sebelumnya. getRandomValues aman di server & browser.
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = new Uint8Array(8);
+  globalThis.crypto.getRandomValues(bytes);
+  let random = "";
+  for (const byte of bytes) random += alphabet[byte % alphabet.length];
   return `TK-${stamp}-${random}`;
 }

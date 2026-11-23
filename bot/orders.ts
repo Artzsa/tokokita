@@ -2,7 +2,7 @@ import { prisma } from "../src/lib/db";
 import { formatIDR, orderStatusLabel } from "../src/lib/format";
 import { normalizePhone } from "../src/lib/phone";
 
-const ORDER_PATTERN = /TK-\d{6}-[A-Z0-9]{4}/i;
+const ORDER_PATTERN = /TK-\d{6}-[A-Z0-9]{4,12}/i;
 
 export async function answerOrderLookup(text: string, senderPhone: string) {
   const match = text.match(ORDER_PATTERN);

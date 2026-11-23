@@ -1,7 +1,7 @@
 export function helpMessage() {
   return [
     "Halo! Saya bot Toko Kita. Saya bisa bantu:",
-    "• Cek pesanan dengan nomor seperti TK-261120-XXXX",
+    "• Cek pesanan dengan nomor seperti TK-261120-ABCD2345",
     "• Ongkir dan pengiriman",
     "• Pembayaran transfer atau COD",
     "• Pengembalian dan perawatan",

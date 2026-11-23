@@ -181,6 +181,15 @@ export default async function AdminOrderDetailPage({
                 Isi alasan pembatalan dulu sebelum menyimpan status Dibatalkan.
               </p>
             ) : null}
+            {error === "stock" ? (
+              <p
+                role="alert"
+                className="mt-3 border border-clay/30 bg-clay/5 px-3 py-2 text-[12px] text-clay-deep"
+              >
+                Stok tidak cukup untuk mengaktifkan kembali pesanan ini. Tambah
+                stok produk terkait dulu, atau biarkan pesanan tetap dibatalkan.
+              </p>
+            ) : null}
             <form action={updateOrderStatusAction} className="mt-4 space-y-3">
               <input type="hidden" name="id" value={order.id} />
               <label htmlFor="status" className="sr-only">

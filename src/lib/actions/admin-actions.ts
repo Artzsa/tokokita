@@ -372,6 +372,9 @@ export async function updateOrderStatusAction(formData: FormData) {
   if (result.reason === "reason-required") {
     redirect(`/admin/pesanan/${id}?error=reason`);
   }
+  if (result.reason === "insufficient-stock") {
+    redirect(`/admin/pesanan/${id}?error=stock`);
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/pesanan");

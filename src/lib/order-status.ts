@@ -24,6 +24,49 @@ async function restoreStock(tx: Prisma.TransactionClient, orderId: string) {
   }
 }
 
+/**
+ * Memesan ulang stok saat pesanan dibatalkan diaktifkan kembali (un-cancel).
+ * Mengecek ketersediaan dulu supaya tidak ada pengurangan parsial, lalu
+ * mengurangi stok. Mengembalikan false kalau stok tidak cukup.
+ */
+async function reserveStock(tx: Prisma.TransactionClient, orderId: string) {
+  const items = await tx.orderItem.findMany({ where: { orderId } });
+
+  for (const item of items) {
+    if (item.variantId) {
+      const variant = await tx.productVariant.findUnique({
+        where: { id: item.variantId },
+        select: { stock: true },
+      });
+      if (!variant || variant.stock < item.qty) return false;
+    }
+    if (item.productId) {
+      const product = await tx.product.findUnique({
+        where: { id: item.productId },
+        select: { stock: true },
+      });
+      if (!product || product.stock < item.qty) return false;
+    }
+  }
+
+  for (const item of items) {
+    if (item.variantId) {
+      await tx.productVariant.update({
+        where: { id: item.variantId },
+        data: { stock: { decrement: item.qty } },
+      });
+    }
+    if (item.productId) {
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stock: { decrement: item.qty } },
+      });
+    }
+  }
+
+  return true;
+}
+
 export async function applyStatusChange(
   orderId: string,
   nextStatus: string,
@@ -55,6 +98,13 @@ export async function applyStatusChange(
 
     if (becomingCancelled && !leavingCancelled && !cancelReason) {
       return { changed: false, reason: "reason-required" as const };
+    }
+
+    if (leavingCancelled && !becomingCancelled) {
+      const reserved = await reserveStock(tx, orderId);
+      if (!reserved) {
+        return { changed: false, reason: "insufficient-stock" as const };
+      }
     }
 
     await tx.order.update({
