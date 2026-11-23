@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
 import { BotConnectPanel } from "@/components/admin/bot-connect-panel";
+import { BusinessSettingsForm } from "@/components/admin/business-settings-form";
+import { ChangePasswordForm } from "@/components/admin/change-password-form";
 import { KnownCustomers } from "@/components/admin/known-customers";
 import { SettingsForm } from "@/components/admin/settings-form";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { formatDateTime } from "@/lib/format";
 import { getSettings } from "@/lib/settings";
-import { normalizePhone } from "@/lib/phone";
+import { normalizePhone, maskPhone } from "@/lib/phone";
+import { retryFailedOutboxAction } from "@/lib/actions/settings-actions";
 
 export const metadata: Metadata = { title: "Pengaturan" };
 
 export default async function SettingsPage() {
   await requireAdmin();
-  const [settings, grouped, orders] = await Promise.all([
+  const [settings, grouped, orders, failed] = await Promise.all([
     getSettings(),
     prisma.notificationOutbox.groupBy({
       by: ["state"],
@@ -20,6 +24,19 @@ export default async function SettingsPage() {
     prisma.order.findMany({
       select: { phone: true, customerName: true, number: true, createdAt: true },
       orderBy: { createdAt: "desc" },
+    }),
+    prisma.notificationOutbox.findMany({
+      where: { state: "failed" },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        phone: true,
+        message: true,
+        attempts: true,
+        lastError: true,
+        createdAt: true,
+      },
     }),
   ]);
 
@@ -62,9 +79,9 @@ export default async function SettingsPage() {
           Pengaturan
         </h1>
         <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted">
-          Atur notifikasi dan koneksi WhatsApp bot. Nilai disimpan di database dan
-          dibaca bot langsung pada siklus berikutnya. Tidak perlu edit file atau
-          restart server.
+          Atur identitas toko, pembayaran transfer, notifikasi, dan koneksi
+          WhatsApp. Nilai disimpan di database dan dibaca bot pada siklus
+          berikutnya.
         </p>
       </header>
 
@@ -79,10 +96,78 @@ export default async function SettingsPage() {
         ))}
       </dl>
 
+      {failed.length > 0 ? (
+        <section className="mt-6 border border-line bg-paper p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+                Pesan gagal
+              </h2>
+              <p className="mt-2 max-w-xl text-[12px] leading-relaxed text-muted">
+                {failed.length} pesan gagal setelah batas percobaan. Kirim ulang
+                setelah bot tersambung. Teks yang dikirim adalah teks yang
+                tersimpan saat pesan dibuat, jadi periksa dulu sebelum menekan
+                kirim ulang.
+              </p>
+            </div>
+            <form action={retryFailedOutboxAction}>
+              <button type="submit" className="btn btn-ghost">
+                Kirim ulang semua
+              </button>
+            </form>
+          </div>
+
+          <ul className="mt-4 border-t border-line">
+            {failed.map((row) => (
+              <li
+                key={row.id}
+                className="flex flex-wrap items-start justify-between gap-3 border-b border-line py-4"
+              >
+                <div className="min-w-0">
+                  <p className="text-[13px] font-medium">
+                    {maskPhone(row.phone)}
+                    <span className="ml-2 text-[11px] font-normal text-muted">
+                      · {row.attempts} percobaan · {formatDateTime(row.createdAt)}
+                    </span>
+                  </p>
+                  <p className="mt-1 max-w-xl truncate text-[11px] text-muted">
+                    {row.message}
+                  </p>
+                  {row.lastError ? (
+                    <p className="mt-1 max-w-xl text-[11px] text-clay-deep">
+                      {row.lastError}
+                    </p>
+                  ) : null}
+                </div>
+                <form action={retryFailedOutboxAction}>
+                  <input type="hidden" name="id" value={row.id} />
+                  <button type="submit" className="btn btn-ghost">
+                    Kirim ulang
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       <div className="mt-6 max-w-3xl space-y-6">
+        <BusinessSettingsForm initial={settings} />
         <BotConnectPanel />
         <KnownCustomers customers={customers} />
         <SettingsForm initial={settings} />
+        <section className="border border-line bg-paper p-5">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+            Keamanan
+          </h2>
+          <p className="mt-2 max-w-2xl text-[12px] leading-relaxed text-muted">
+            Ganti kata sandi admin. Sesi yang sedang aktif tetap berlaku sampai
+            kedaluwarsa, jadi keluar dari perangkat lain setelah mengganti.
+          </p>
+          <div className="mt-5">
+            <ChangePasswordForm />
+          </div>
+        </section>
       </div>
 
       <p className="mt-6 max-w-2xl text-[11px] leading-relaxed text-muted">

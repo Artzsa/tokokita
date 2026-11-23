@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { NavigationProgress } from "@/components/navigation-progress";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
@@ -18,6 +19,7 @@ export default async function PanelLayout({
 
   return (
     <div className="min-h-screen md:grid md:grid-cols-[248px_1fr]">
+      <NavigationProgress />
       <a
         href="#panel-konten"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:bg-ink focus:px-4 focus:py-2 focus:text-[13px] focus:text-paper"

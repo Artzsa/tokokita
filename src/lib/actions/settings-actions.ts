@@ -78,3 +78,17 @@ export async function saveSettingsAction(
   revalidatePath("/admin/pengaturan");
   return { ok: true, nonce: Date.now() };
 }
+
+export async function retryFailedOutboxAction(formData: FormData) {
+  await requireAdmin();
+
+  const id = String(formData.get("id") ?? "").trim();
+
+  await prisma.notificationOutbox.updateMany({
+    where: id ? { id, state: "failed" } : { state: "failed" },
+    data: { state: "pending", attempts: 0, lastError: null },
+  });
+
+  revalidatePath("/admin/pengaturan");
+  revalidatePath("/admin");
+}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { getSettings } from "@/lib/settings";
 import { store } from "@/lib/store";
 
 export const metadata: Metadata = {
@@ -26,9 +27,10 @@ const steps = [
 ];
 
 export default async function AboutPage() {
-  const [productCount, categoryCount] = await Promise.all([
+  const [productCount, categoryCount, settings] = await Promise.all([
     prisma.product.count({ where: { status: "active" } }),
     prisma.category.count(),
+    getSettings(),
   ]);
 
   return (
@@ -44,9 +46,10 @@ export default async function AboutPage() {
         <div className="mt-12 grid gap-12 lg:grid-cols-[1fr_0.85fr] lg:gap-20">
           <div className="space-y-6 text-[15px] leading-relaxed text-ink-soft">
             <p className="first-letter:float-left first-letter:mr-3 first-letter:font-display first-letter:text-[64px] first-letter:leading-[0.85] first-letter:text-clay">
-              {store.name} dijalankan sendiri. Katalognya sengaja pendek:
-              perkakas rumah, tas, dan alat kerja yang stoknya bisa dihitung
-              satu per satu.
+              {store.name} dijalankan sendiri
+              {settings.storeCity ? ` dari ${settings.storeCity}` : ""}.
+              Katalognya sengaja pendek: perkakas rumah, tas, dan alat kerja yang
+              stoknya bisa dihitung satu per satu.
             </p>
             <p>
               Tidak ada akun pelanggan dan tidak ada pembayaran otomatis. Setiap

@@ -1,4 +1,4 @@
-import { getSettings } from "./settings";
+import { getSettings, type Settings } from "./settings";
 
 function normalizePhone(value: string) {
   const digits = value.replace(/\D/g, "");
@@ -7,14 +7,17 @@ function normalizePhone(value: string) {
   return digits;
 }
 
-export async function getStoreWhatsapp() {
-  const settings = await getSettings();
+export function whatsappNumber(settings: Settings) {
   const raw =
     settings.pairNumber ||
     settings.allowedNumbers.split(",")[0] ||
     process.env.BOT_PAIR_NUMBER ||
     "6289520223556";
   return normalizePhone(raw);
+}
+
+export async function getStoreWhatsapp() {
+  return whatsappNumber(await getSettings());
 }
 
 export async function whatsappLink(message: string) {

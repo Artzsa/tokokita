@@ -58,7 +58,7 @@ export default async function AdminDashboardPage({
   if (data.outbox.failed > 0) {
     actionItems.push({
       label: "Pesan bot gagal terkirim",
-      detail: "Pesan gagal setelah batas percobaan. Cek status bot, lalu hubungi pelanggan manual.",
+      detail: "Buka pengaturan untuk mengirim ulang setelah bot tersambung.",
       count: data.outbox.failed,
       href: "/admin/pengaturan",
     });

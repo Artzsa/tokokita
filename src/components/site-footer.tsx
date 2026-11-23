@@ -1,18 +1,20 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { getStoreWhatsapp } from "@/lib/contact";
+import { whatsappNumber } from "@/lib/contact";
+import { getSettings } from "@/lib/settings";
 import { store } from "@/lib/store";
 
 export async function SiteFooter() {
-  const [categories, whatsapp] = await Promise.all([
+  const [categories, settings] = await Promise.all([
     prisma.category.findMany({
       where: { products: { some: { status: "active" } } },
       orderBy: { position: "asc" },
       take: 3,
       select: { name: true, slug: true },
     }),
-    getStoreWhatsapp(),
+    getSettings(),
   ]);
+  const whatsapp = whatsappNumber(settings);
 
   return (
     <footer className="mt-24 border-t border-line bg-paper-deep">
@@ -101,6 +103,19 @@ export async function SiteFooter() {
                 WhatsApp +{whatsapp}
               </a>
             </li>
+            {settings.storeEmail ? (
+              <li>
+                <a
+                  href={`mailto:${settings.storeEmail}`}
+                  className="link-underline"
+                >
+                  {settings.storeEmail}
+                </a>
+              </li>
+            ) : null}
+            {settings.storeInstagram ? (
+              <li>{settings.storeInstagram}</li>
+            ) : null}
             <li>
               <Link href="/kontak" className="link-underline">
                 Halaman kontak

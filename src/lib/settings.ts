@@ -9,6 +9,14 @@ export type Settings = {
   welcomeMessage: string;
   pollMs: number;
   maxAttempts: number;
+  storeCity: string;
+  storeAddress: string;
+  storeEmail: string;
+  storeInstagram: string;
+  storeHours: string;
+  bankName: string;
+  bankNumber: string;
+  bankHolder: string;
 };
 
 function bool(value: string | undefined, fallback: boolean) {
@@ -33,6 +41,14 @@ function defaults(): Settings {
       "Halo! Saya bot Toko Kita. Saya bisa bantu cek pesanan, ongkir, pembayaran, dan pengembalian.",
     pollMs: number(process.env.BOT_POLL_MS, 5000),
     maxAttempts: number(process.env.BOT_MAX_ATTEMPTS, 3),
+    storeCity: "",
+    storeAddress: "",
+    storeEmail: "",
+    storeInstagram: "",
+    storeHours: "",
+    bankName: "",
+    bankNumber: "",
+    bankHolder: "",
   };
 }
 
@@ -63,5 +79,13 @@ export async function getSettings(): Promise<Settings> {
     welcomeMessage: map.get("welcomeMessage") ?? base.welcomeMessage,
     pollMs: number(map.get("pollMs"), base.pollMs),
     maxAttempts: number(map.get("maxAttempts"), base.maxAttempts),
+    storeCity: map.get("storeCity") ?? base.storeCity,
+    storeAddress: map.get("storeAddress") ?? base.storeAddress,
+    storeEmail: map.get("storeEmail") ?? base.storeEmail,
+    storeInstagram: map.get("storeInstagram") ?? base.storeInstagram,
+    storeHours: map.get("storeHours") ?? base.storeHours,
+    bankName: map.get("bankName") ?? base.bankName,
+    bankNumber: map.get("bankNumber") ?? base.bankNumber,
+    bankHolder: map.get("bankHolder") ?? base.bankHolder,
   };
 }

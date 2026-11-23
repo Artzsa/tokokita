@@ -2,7 +2,7 @@ import "dotenv/config";
 import type { WAMessage } from "@whiskeysockets/baileys";
 import { config, maskPhone, refreshConfig } from "./config";
 import { getKnownCustomerPhones, isKnownCustomer } from "./customers";
-import { getSettings } from "../src/lib/settings";
+import { getSettings, setSetting } from "../src/lib/settings";
 import { helpMessage } from "./faq";
 import { getRules, matchRule } from "../src/lib/rules";
 import { messageText, resolveSender } from "./incoming";
@@ -135,6 +135,8 @@ async function handleUpsert({ messages, type }: ChatUpsert) {
 async function main() {
   console.log("[bot] Menjalankan Toko Kita WhatsApp bot...");
   await refreshConfig();
+  await setSetting("bot_pid", String(process.pid));
+  await setSetting("bot_status", "starting");
   setChatListener((args) => {
     void handleUpsert(args);
   });
@@ -159,11 +161,20 @@ async function main() {
     console.error("[bot] uncaughtException:", error);
   });
 
-  process.on("SIGINT", () => {
+  const shutdown = async () => {
     if (outboxTimer) clearTimeout(outboxTimer);
     if (sweepTimer) clearInterval(sweepTimer);
     console.log("[bot] Berhenti.");
+    await setSetting("bot_pid", "").catch(() => undefined);
+    await setSetting("bot_status", "offline").catch(() => undefined);
     process.exit(0);
+  };
+
+  process.on("SIGINT", () => {
+    void shutdown();
+  });
+  process.on("SIGTERM", () => {
+    void shutdown();
   });
 }
 

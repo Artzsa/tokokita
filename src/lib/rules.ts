@@ -10,7 +10,7 @@ const defaultRules = [
   {
     keywords: "bayar, pembayaran, transfer, cod",
     answer:
-      "Pembayaran bisa lewat transfer bank atau bayar di tempat (COD). Instruksi transfer muncul di halaman pesanan setelah checkout.",
+      "Pembayaran bisa lewat transfer bank atau bayar di tempat (COD). Instruksi transfer tampil di halaman pesanan kalau rekening sudah diatur. Kalau belum, minta nomor rekening lewat WhatsApp.",
   },
   {
     keywords: "retur, rusak, komplain, tukar, garansi",

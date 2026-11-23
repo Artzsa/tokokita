@@ -5,6 +5,8 @@ import { ArrowRight, Check, MessageCircle } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { formatDateTime, formatIDR, orderStatusLabel } from "@/lib/format";
 import { whatsappLink } from "@/lib/contact";
+import { bankIsReady } from "@/lib/business";
+import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Pesanan",
@@ -39,6 +41,8 @@ export default async function OrderPage({
 
   if (!order) notFound();
 
+  const settings = await getSettings();
+  const bankReady = bankIsReady(settings);
   const firstName = order.customerName.split(" ")[0];
   const isPending = order.status === "pending";
   const isTransfer = order.paymentMethod === "transfer";
@@ -49,7 +53,9 @@ export default async function OrderPage({
     {
       title: isTransfer ? "Siapkan pembayaran" : "Siapkan pembayaran di tempat",
       body: isTransfer
-        ? "Minta nomor rekening lewat WhatsApp. Cantumkan nomor pesanan di pesan atau berita transfer."
+        ? bankReady
+          ? `Transfer ke ${settings.bankName} ${settings.bankNumber} a.n. ${settings.bankHolder}. Cantumkan nomor pesanan di berita transfer.`
+          : "Minta nomor rekening lewat WhatsApp. Cantumkan nomor pesanan di pesan atau berita transfer."
         : "Bayar tunai saat kurir menyerahkan barang. Siapkan uang pas bila memungkinkan.",
     },
     {
@@ -217,13 +223,34 @@ export default async function OrderPage({
           {isPending && isTransfer ? (
             <div className="border border-ink bg-ink p-6 text-paper">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-paper/60">
-                Pembayaran transfer
+                {bankReady ? "Transfer ke" : "Pembayaran transfer"}
               </p>
-              <p className="display mt-3 text-2xl">Instruksi lewat WhatsApp</p>
-              <p className="mt-3 text-[13px] leading-relaxed text-paper/70">
-                Nomor rekening dikirim admin setelah pesanan dicek. Sebutkan
-                nomor pesanan saat menghubungi.
-              </p>
+
+              {bankReady ? (
+                <>
+                  <p className="display mt-3 text-2xl">{settings.bankName}</p>
+                  <p className="mt-4 font-mono text-lg tracking-wider">
+                    {settings.bankNumber}
+                  </p>
+                  <p className="mt-1 text-xs text-paper/60">
+                    a.n. {settings.bankHolder}
+                  </p>
+                  <p className="mt-3 text-[12px] leading-relaxed text-paper/70">
+                    Cantumkan nomor pesanan di berita transfer, lalu kirim bukti
+                    lewat WhatsApp.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="display mt-3 text-2xl">
+                    Instruksi lewat WhatsApp
+                  </p>
+                  <p className="mt-3 text-[13px] leading-relaxed text-paper/70">
+                    Nomor rekening dikirim admin setelah pesanan dicek. Sebutkan
+                    nomor pesanan saat menghubungi.
+                  </p>
+                </>
+              )}
 
               <div className="mt-6 border-t border-paper/20 pt-4">
                 <p className="text-[10px] uppercase tracking-[0.14em] text-paper/60">
@@ -241,7 +268,7 @@ export default async function OrderPage({
                 className="btn mt-6 w-full border-paper bg-paper text-ink hover:border-clay hover:bg-clay hover:text-paper"
               >
                 <MessageCircle size={15} />
-                Minta instruksi transfer
+                {bankReady ? "Konfirmasi via WhatsApp" : "Minta instruksi transfer"}
               </a>
             </div>
           ) : (

@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MessageCircle, Wrench } from "lucide-react";
-import { getStoreWhatsapp } from "@/lib/contact";
+import {
+  AtSign,
+  Clock,
+  CircleHelp,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Wrench,
+} from "lucide-react";
+import { whatsappNumber } from "@/lib/contact";
+import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Kontak",
@@ -29,9 +38,24 @@ const topics = [
 ];
 
 export default async function ContactPage() {
-  const whatsapp = await getStoreWhatsapp();
+  const settings = await getSettings();
+  const whatsapp = whatsappNumber(settings);
   const waLink = `https://wa.me/${whatsapp}?text=${encodeURIComponent("Halo Toko Kita, saya mau tanya.")}`;
   const repairLink = `https://wa.me/${whatsapp}?text=${encodeURIComponent("Halo, saya mau tanya soal barang yang bermasalah.")}`;
+
+  const instagramHandle = settings.storeInstagram.replace(/^@/, "").trim();
+  const instagramUrl = instagramHandle
+    ? `https://instagram.com/${encodeURIComponent(instagramHandle)}`
+    : "";
+  const mapsUrl = settings.storeAddress
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.storeAddress)}`
+    : "";
+  const hasOtherContacts = Boolean(
+    settings.storeEmail ||
+      settings.storeAddress ||
+      settings.storeHours ||
+      instagramUrl,
+  );
 
   return (
     <div className="wrap pt-12 md:pt-16">
@@ -75,11 +99,94 @@ export default async function ContactPage() {
             </div>
           </a>
 
+          {settings.storeEmail ? (
+            <a
+              href={`mailto:${settings.storeEmail}`}
+              className="group flex items-start gap-5 border-b border-line py-6"
+            >
+              <Mail
+                size={20}
+                strokeWidth={1.5}
+                className="mt-1 shrink-0 text-clay"
+              />
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+                  Email
+                </p>
+                <p className="mt-1 text-lg transition-colors group-hover:text-clay">
+                  {settings.storeEmail}
+                </p>
+              </div>
+            </a>
+          ) : null}
+
+          {settings.storeAddress ? (
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="group flex items-start gap-5 border-b border-line py-6"
+            >
+              <MapPin
+                size={20}
+                strokeWidth={1.5}
+                className="mt-1 shrink-0 text-clay"
+              />
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+                  Alamat
+                </p>
+                <p className="mt-1 max-w-xs text-[15px] leading-snug transition-colors group-hover:text-clay">
+                  {settings.storeAddress}
+                </p>
+              </div>
+            </a>
+          ) : null}
+
+          {instagramUrl ? (
+            <a
+              href={instagramUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="group flex items-start gap-5 border-b border-line py-6"
+            >
+              <AtSign
+                size={20}
+                strokeWidth={1.5}
+                className="mt-1 shrink-0 text-clay"
+              />
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+                  Instagram
+                </p>
+                <p className="mt-1 text-lg transition-colors group-hover:text-clay">
+                  @{instagramHandle}
+                </p>
+              </div>
+            </a>
+          ) : null}
+
+          {settings.storeHours ? (
+            <div className="flex items-start gap-5 border-b border-line py-6">
+              <Clock
+                size={20}
+                strokeWidth={1.5}
+                className="mt-1 shrink-0 text-clay"
+              />
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+                  Jam buka atau jam balasan
+                </p>
+                <p className="mt-1 text-[15px]">{settings.storeHours}</p>
+              </div>
+            </div>
+          ) : null}
+
           <div className="flex items-start gap-5 border-b border-line py-6">
-            <MessageCircle
+            <CircleHelp
               size={20}
               strokeWidth={1.5}
-              className="mt-1 shrink-0 text-muted"
+              className="mt-1 shrink-0 text-clay"
             />
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
@@ -94,27 +201,17 @@ export default async function ContactPage() {
                 <Link href="/kebijakan" className="link-underline text-clay">
                   kebijakan toko
                 </Link>
-                . Jawabannya mungkin sudah ada di sana.
+                .
               </p>
             </div>
           </div>
 
-          <div className="flex items-start gap-5 border-b border-line py-6">
-            <MessageCircle
-              size={20}
-              strokeWidth={1.5}
-              className="mt-1 shrink-0 text-muted"
-            />
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
-                Jam balasan
-              </p>
-              <p className="mt-1 text-[14px] leading-relaxed text-ink-soft">
-                Tidak ada janji jam balasan tetap. Pesanan tetap bisa masuk 24 jam
-                lewat situs.
-              </p>
-            </div>
-          </div>
+          {!hasOtherContacts ? (
+            <p className="border-b border-line py-5 text-[12px] leading-relaxed text-muted">
+              Alamat, email, Instagram, dan jam buka belum diisi admin. WhatsApp
+              adalah jalur kontak utama saat ini.
+            </p>
+          ) : null}
         </div>
 
         <aside className="self-start border border-line bg-paper-deep/40 p-7">

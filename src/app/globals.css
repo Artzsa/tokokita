@@ -348,6 +348,39 @@
   animation: tk-count-pop 420ms ease-out;
 }
 
+@keyframes tk-progress {
+  0% {
+    transform: scaleX(0);
+  }
+  20% {
+    transform: scaleX(0.55);
+  }
+  60% {
+    transform: scaleX(0.8);
+  }
+  100% {
+    transform: scaleX(0.95);
+  }
+}
+
+.tk-progress-wrap {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.tk-progress-wrap.is-active {
+  opacity: 1;
+}
+
+.tk-progress {
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.tk-progress-wrap.is-active .tk-progress {
+  animation: tk-progress 9s cubic-bezier(0.15, 0.7, 0.3, 1) forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -362,6 +395,12 @@
   .tk-hero-media,
   .tk-count-pop {
     animation: none;
+  }
+
+  .tk-progress-wrap.is-active .tk-progress {
+    animation: none;
+    transform: scaleX(1);
+    transform-origin: left;
   }
 
   .tk-reveal,

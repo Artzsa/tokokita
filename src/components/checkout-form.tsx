@@ -72,7 +72,7 @@ function Field({
   );
 }
 
-export function CheckoutForm() {
+export function CheckoutForm({ bankReady }: { bankReady: boolean }) {
   const [state, formAction] = useActionState<CheckoutState, FormData>(
     placeOrderAction,
     {},
@@ -200,8 +200,9 @@ export function CheckoutForm() {
                 Transfer bank
               </span>
               <span className="mt-1 block text-xs leading-relaxed text-muted">
-                Nomor rekening dikirim admin lewat WhatsApp. Konfirmasi
-                pembayaran juga lewat WhatsApp.
+                {bankReady
+                  ? "Nomor rekening tampil di halaman pesanan setelah checkout. Konfirmasi lewat WhatsApp."
+                  : "Nomor rekening dikirim admin lewat WhatsApp. Konfirmasi pembayaran juga lewat WhatsApp."}
               </span>
             </span>
           </label>

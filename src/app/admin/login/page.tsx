@@ -52,16 +52,13 @@ export default async function LoginPage() {
           <LoginForm />
 
           <div className="mt-8 border border-dashed border-line p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-clay">
-              Akun demo
-            </p>
-            <p className="mt-2 font-mono text-[12px] text-ink-soft">
-              admin@tokokita.test
-              <br />
-              tokokita123
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-clay">
+              Setelah masuk
             </p>
             <p className="mt-2 text-[11px] leading-relaxed text-muted">
-              Ganti kata sandi dan hapus catatan ini sebelum toko online.
+              Ganti kata sandi lewat Pengaturan lalu bagian Keamanan. Jangan
+              biarkan kata sandi awal dipakai saat toko diakses dari perangkat
+              lain.
             </p>
           </div>
 

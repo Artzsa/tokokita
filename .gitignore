@@ -47,3 +47,6 @@ prisma/*.db-journal
 
 # sesi login WhatsApp bot (JANGAN di-commit)
 bot/session/
+
+# pid dan log proses lokal
+.local/

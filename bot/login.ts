@@ -76,11 +76,24 @@ export async function connect(): Promise<WASocket | null> {
 
   const { state, saveCreds } = await loadAuthState(config.sessionDir);
   const version = await getWhatsAppVersion();
+  const ownLidUser = state.creds.me?.lid?.split(":")[0].split("@")[0] ?? "";
   const sock = makeWASocket({
     auth: state,
     version,
     browser: Browsers.ubuntu("Toko Kita Bot"),
     markOnlineOnConnect: false,
+    /**
+     * Pesan dari LID bot sendiri (chat "message yourself") tidak bisa
+     * didekripsi dan memicu retry receipt terus-menerus. Abaikan sebelum
+     * dekripsi supaya log tidak banjir dan koneksi tidak sibuk.
+     */
+    shouldIgnoreJid: (jid) => {
+      if (!ownLidUser) return false;
+      return (
+        jid === `${ownLidUser}@lid` ||
+        jid === `${ownLidUser}@s.whatsapp.net`
+      );
+    },
   });
   currentSocket = sock;
 

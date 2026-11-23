@@ -6,6 +6,8 @@ import { CartSummary } from "@/components/cart-summary";
 import { CheckoutForm } from "@/components/checkout-form";
 import { getCart } from "@/lib/cart";
 import { formatIDR } from "@/lib/format";
+import { bankIsReady } from "@/lib/business";
+import { getSettings } from "@/lib/settings";
 import { store } from "@/lib/store";
 
 export const metadata: Metadata = {
@@ -32,8 +34,9 @@ const reassurances = [
 ];
 
 export default async function CheckoutPage() {
-  const cart = await getCart();
+  const [cart, settings] = await Promise.all([getCart(), getSettings()]);
   if (cart.lines.length === 0) redirect("/keranjang");
+  const bankReady = bankIsReady(settings);
 
   return (
     <div className="wrap pt-12 md:pt-16">
@@ -50,7 +53,7 @@ export default async function CheckoutPage() {
       </header>
 
       <div className="mt-10 grid gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
-        <CheckoutForm />
+        <CheckoutForm bankReady={bankReady} />
 
         <div className="lg:sticky lg:top-32 lg:self-start">
           <div className="border border-line border-b-0">

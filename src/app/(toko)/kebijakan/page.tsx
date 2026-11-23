@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { formatIDR } from "@/lib/format";
 import { store } from "@/lib/store";
-import { getStoreWhatsapp, whatsappLink } from "@/lib/contact";
+import { getSettings } from "@/lib/settings";
+import { whatsappNumber } from "@/lib/contact";
+import { bankIsReady } from "@/lib/business";
 
 export const metadata: Metadata = {
   title: "Kebijakan",
@@ -19,13 +21,16 @@ const summary = [
   { label: "Pesanan pending", value: "Dibatalkan setelah 3 hari" },
 ];
 
-const sections = [
+function getSections(bankReady: boolean) {
+  return [
   {
     id: "pembayaran",
     title: "Pembayaran",
     body: [
       "Pembayaran dilakukan lewat transfer bank atau bayar di tempat (COD). Situs ini belum menerima kartu kredit, cicilan, atau pembayaran otomatis.",
-      "Instruksi transfer dikirim lewat WhatsApp setelah pesanan dicek. Admin mencocokkan pembayaran secara manual, lalu mengubah status pesanan.",
+      bankReady
+        ? "Nomor rekening tampil di halaman pesanan setelah checkout. Admin mencocokkan pembayaran secara manual, lalu mengubah status pesanan."
+        : "Instruksi transfer dikirim lewat WhatsApp setelah pesanan dicek. Admin mencocokkan pembayaran secara manual, lalu mengubah status pesanan.",
       "Pesanan yang belum dibayar atau dikonfirmasi selama 3 hari dibatalkan otomatis. Stok dari pesanan itu dilepas kembali ke katalog.",
       "Nominal yang harus dibayar tercantum di halaman pesanan. Tidak ada biaya tambahan di luar harga barang dan ongkir.",
     ],
@@ -75,13 +80,14 @@ const sections = [
       "Kalau ragu soal cara membersihkan bahan tertentu, tanya lewat WhatsApp sebelum mencoba.",
     ],
   },
-];
+  ];
+}
 
 export default async function PolicyPage() {
-  const [whatsapp, waLink] = await Promise.all([
-    getStoreWhatsapp(),
-    whatsappLink("Halo Toko Kita, saya mau tanya soal kebijakan toko."),
-  ]);
+  const settings = await getSettings();
+  const whatsapp = whatsappNumber(settings);
+  const waLink = `https://wa.me/${whatsapp}?text=${encodeURIComponent("Halo Toko Kita, saya mau tanya soal kebijakan toko.")}`;
+  const sections = getSections(bankIsReady(settings));
 
   return (
     <div className="wrap pt-12 md:pt-16">

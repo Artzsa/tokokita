@@ -4,6 +4,8 @@ import { MessageCircle, Plus } from "lucide-react";
 import { formatIDR } from "@/lib/format";
 import { store } from "@/lib/store";
 import { whatsappLink } from "@/lib/contact";
+import { bankIsReady } from "@/lib/business";
+import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Pertanyaan umum",
@@ -11,7 +13,8 @@ export const metadata: Metadata = {
     "Cara memesan, pembayaran, pengiriman, stok, dan bot WhatsApp Toko Kita.",
 };
 
-const groups = [
+function getGroups(bankReady: boolean) {
+  return [
   {
     title: "Pesanan",
     items: [
@@ -29,7 +32,9 @@ const groups = [
       },
       {
         q: "Bisa bayar di tempat (COD)?",
-        a: "Bisa. Pilih COD di checkout. Untuk transfer, minta nomor rekening lewat WhatsApp setelah pesanan dibuat.",
+        a: bankReady
+          ? "Bisa. Pilih COD di checkout. Untuk transfer, nomor rekening tampil di halaman pesanan setelah checkout."
+          : "Bisa. Pilih COD di checkout. Untuk transfer, minta nomor rekening lewat WhatsApp setelah pesanan dibuat.",
       },
     ],
   },
@@ -96,9 +101,16 @@ const groups = [
       },
     ],
   },
-];
+  ];
+}
 
 export default async function FaqPage() {
+  const [settings, waLink] = await Promise.all([
+    getSettings(),
+    whatsappLink("Halo Toko Kita, saya mau tanya sesuatu."),
+  ]);
+  const groups = getGroups(bankIsReady(settings));
+
   return (
     <div className="wrap pt-12 md:pt-16">
       <div className="grid gap-12 lg:grid-cols-[0.75fr_1.25fr] lg:gap-20">
@@ -114,7 +126,7 @@ export default async function FaqPage() {
             ini. Kalau belum ada jawabannya, tanya langsung.
           </p>
           <a
-            href={await whatsappLink("Halo Toko Kita, saya mau tanya sesuatu.")}
+            href={waLink}
             target="_blank"
             rel="noreferrer"
             className="btn btn-outline mt-7"

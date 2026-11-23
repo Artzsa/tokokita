@@ -21,17 +21,38 @@ Panel admin: http://localhost:3000/admin
 - Email: `admin@tokokita.test`
 - Kata sandi: `tokokita123`
 
-Ganti keduanya sebelum toko dipakai sungguhan.
+Ganti keduanya sebelum toko dipakai sungguhan. Kata sandi bisa diganti dari
+**Pengaturan > Keamanan** setelah masuk.
+
+### Nyalakan web dan bot sekaligus
+
+Di PowerShell, dari folder proyek:
+
+```powershell
+.\scripts\start-local.ps1
+```
+
+Script menyalakan dev server dan bot di background, lalu menyimpan PID dan log
+di folder `.local/`. Untuk menghentikan keduanya:
+
+```powershell
+.\scripts\stop-local.ps1
+```
+
+Kalau hanya ingin menjalankan manual, tetap bisa pakai `npm run dev` dan
+`npm run bot` di dua terminal terpisah.
 
 ## Yang sudah ada
 
 - Beranda editorial, katalog dengan filter kategori + pencarian + urutan, halaman produk, keranjang, checkout, halaman konfirmasi pesanan.
 - Halaman Tentang, Kontak, FAQ, dan Kebijakan dengan salinan yang ditulis manual.
+- Pengaturan toko di panel admin: kota/asal, alamat, email, Instagram, jam buka, dan rekening bank. Bagian yang kosong tidak ditampilkan di toko.
+- Kata sandi admin bisa diganti dari **Pengaturan > Keamanan**.
 - Panel admin: ringkasan, kelola produk (termasuk unggah foto & varian), kelola pesanan + ubah status, kelola kategori.
 - Sesi admin pakai cookie bertanda tangan HMAC; keranjang juga disimpan di cookie. Tidak ada database user yang kompleks.
 - Pembayaran masih manual: transfer bank atau COD. Tidak ada gateway.
 - Status pesanan lengkap: menunggu bayar → dibayar → dikemas → dikirim → selesai, plus dibatalkan (stok otomatis dikembalikan). Pesanan pending otomatis dibatalkan setelah 3 hari.
-- Notifikasi WhatsApp untuk setiap perubahan status lewat tabel `NotificationOutbox` + bot Baileys. Pesan tidak hilang walau bot sedang mati.
+- Notifikasi WhatsApp untuk setiap perubahan status lewat tabel `NotificationOutbox` + bot Baileys. Pesan tidak hilang walau bot sedang mati. Pesan yang gagal bisa dikirim ulang dari **Pengaturan**.
 - Kartu katalog 3D memakai Three.js + React Three Fiber: gambar produk jadi tekstur kartu berketebalan yang bisa diputar dengan kursor/panah keyboard. Scene di-*lazy load*. Di desktop, kartu katalog memasang kanvas saat di-hover; di layar sentuh dan dengan `prefers-reduced-motion`, gambar statis yang tampil.
 
 ## Skrip
