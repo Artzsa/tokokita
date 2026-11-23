@@ -6,7 +6,7 @@ import { CartSummary } from "@/components/cart-summary";
 import { CheckoutForm } from "@/components/checkout-form";
 import { getCart } from "@/lib/cart";
 import { formatIDR } from "@/lib/format";
-import { bankIsReady } from "@/lib/business";
+import { bankIsReady, qrisIsReady } from "@/lib/business";
 import { getSettings } from "@/lib/settings";
 import { store } from "@/lib/store";
 
@@ -29,7 +29,7 @@ const reassurances = [
   {
     icon: ShieldCheck,
     title: "Pembayaran dikonfirmasi manual",
-    body: "Pilih transfer atau COD. Instruksi transfer dikirim lewat WhatsApp.",
+    body: "Pilih transfer, QRIS, atau COD. Instruksi dan QR tampil di halaman pesanan setelah checkout.",
   },
 ];
 
@@ -37,6 +37,7 @@ export default async function CheckoutPage() {
   const [cart, settings] = await Promise.all([getCart(), getSettings()]);
   if (cart.lines.length === 0) redirect("/keranjang");
   const bankReady = bankIsReady(settings);
+  const qrisReady = qrisIsReady(settings);
 
   return (
     <div className="wrap pt-12 md:pt-16">
@@ -53,7 +54,7 @@ export default async function CheckoutPage() {
       </header>
 
       <div className="mt-10 grid gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
-        <CheckoutForm bankReady={bankReady} />
+        <CheckoutForm bankReady={bankReady} qrisReady={qrisReady} />
 
         <div className="lg:sticky lg:top-32 lg:self-start">
           <div className="border border-line border-b-0">
@@ -80,8 +81,8 @@ export default async function CheckoutPage() {
             cart={cart}
             note={
               <>
-                Instruksi transfer dikirim lewat WhatsApp. Pesanan disimpan
-                selama 3 hari sebelum stok dilepas kembali.
+                Instruksi transfer dan QRIS tampil di halaman pesanan. Pesanan
+                disimpan selama 3 hari sebelum stok dilepas kembali.
               </>
             }
           />

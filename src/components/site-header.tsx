@@ -6,7 +6,7 @@ import { store } from "@/lib/store";
 
 const ticker = [
   "Checkout tanpa akun",
-  "Bayar transfer atau COD",
+  "Transfer, QRIS, atau COD",
   "Konfirmasi lewat WhatsApp",
   "Gratis ongkir di atas Rp 500.000",
 ];

@@ -26,17 +26,21 @@ export function rangeLabel(range: DashboardRange) {
   return "Semua waktu";
 }
 
+const STALE_UNPAID_MS = 24 * 60 * 60 * 1000;
+
 export async function getDashboardData(range: DashboardRange) {
   const start = rangeStart(range);
   const orderWhere = {
     status: { not: "cancelled" },
     ...(start ? { createdAt: { gte: start } } : {}),
   };
+  const staleCutoff = new Date(Date.now() - STALE_UNPAID_MS);
 
   const [
     revenue,
     orderCount,
     pendingCount,
+    staleUnpaidCount,
     oldestPendingAt,
     paidCount,
     packedCount,
@@ -51,12 +55,20 @@ export async function getDashboardData(range: DashboardRange) {
     prisma.order.aggregate({
       _sum: { total: true },
       where: {
-        status: { in: ["paid", "packed", "shipped", "completed"] },
-        ...(start ? { createdAt: { gte: start } } : {}),
+        paymentStatus: "paid",
+        status: { not: "cancelled" },
+        ...(start ? { paidAt: { gte: start } } : {}),
       },
     }),
     prisma.order.count({ where: orderWhere }),
     prisma.order.count({ where: { status: "pending" } }),
+    prisma.order.count({
+      where: {
+        status: "pending",
+        paymentStatus: "unpaid",
+        createdAt: { lt: staleCutoff },
+      },
+    }),
     prisma.order.findFirst({
       where: { status: "pending" },
       orderBy: { createdAt: "asc" },
@@ -135,6 +147,7 @@ export async function getDashboardData(range: DashboardRange) {
     revenue: revenue._sum.total ?? 0,
     orderCount,
     pendingCount,
+    staleUnpaidCount,
     oldestPendingAt: oldestPendingAt?.createdAt ?? null,
     paidCount,
     packedCount,

@@ -7,6 +7,7 @@ import {
   saveBusinessSettingsAction,
   type BusinessState,
 } from "@/lib/actions/business-actions";
+import { QrisSettings } from "@/components/admin/qris-settings";
 import type { Settings } from "@/lib/settings";
 
 function SubmitButton() {
@@ -148,6 +149,20 @@ export function BusinessSettingsForm({ initial }: { initial: Settings }) {
             wide
           />
         </div>
+      </section>
+
+      <section className="border border-line bg-paper p-5">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
+          Pembayaran QRIS
+        </h2>
+        <p className="mt-2 max-w-2xl text-[12px] leading-relaxed text-muted">
+          Isi QRIS merchant kalau ingin menerima pembayaran QRIS. Nominal
+          pesanan ditanam ke QR yang tampil di halaman pesanan. Pembayaran tetap
+          dicek manual dari WhatsApp, lalu ditandai lunas di detail pesanan.
+        </p>
+        <QrisSettings
+          initial={values.qrisPayload ?? String(initial.qrisPayload ?? "")}
+        />
       </section>
 
       <p className="text-[11px] leading-relaxed text-muted">

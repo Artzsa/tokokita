@@ -50,6 +50,22 @@ export function orderStatusLabel(status: string) {
   return orderStatusLabels[status] ?? status;
 }
 
+export const paymentStatusLabels: Record<string, string> = {
+  unpaid: "Belum dibayar",
+  paid: "Lunas",
+  refunded: "Dikembalikan",
+};
+
+export function paymentStatusLabel(status: string) {
+  return paymentStatusLabels[status] ?? status;
+}
+
+export function paymentMethodLabel(method: string) {
+  if (method === "cod") return "COD";
+  if (method === "qris") return "QRIS";
+  return "Transfer bank";
+}
+
 export function slugify(input: string) {
   return input
     .toLowerCase()

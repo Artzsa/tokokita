@@ -8,9 +8,9 @@ const defaultRules = [
     answer: `Ongkir tetap ${formatIDR(store.flatShipping)} per pesanan, gratis untuk subtotal di atas ${formatIDR(store.freeShippingThreshold)}. Pesanan disiapkan manual, jadi statusnya berubah setelah admin mencatatnya.`,
   },
   {
-    keywords: "bayar, pembayaran, transfer, cod",
+    keywords: "bayar, pembayaran, transfer, cod, qris",
     answer:
-      "Pembayaran bisa lewat transfer bank atau bayar di tempat (COD). Instruksi transfer tampil di halaman pesanan kalau rekening sudah diatur. Kalau belum, minta nomor rekening lewat WhatsApp.",
+      "Pembayaran bisa lewat transfer bank, QRIS, atau bayar di tempat (COD). Instruksi transfer dan QRIS tampil di halaman pesanan. QRIS hanya ditampilkan 10 menit, lalu bisa dimunculkan lagi. Setelah membayar, kirim bukti lewat WhatsApp karena admin mencocokkan pembayaran secara manual.",
   },
   {
     keywords: "retur, rusak, komplain, tukar, garansi",

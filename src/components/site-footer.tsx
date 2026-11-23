@@ -130,7 +130,7 @@ export async function SiteFooter() {
           © {new Date().getFullYear()} {store.legalName}. Semua harga dalam
           Rupiah.
         </p>
-        <p>Transfer bank dan COD</p>
+        <p>Transfer bank, QRIS, dan COD</p>
       </div>
     </footer>
   );

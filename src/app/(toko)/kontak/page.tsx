@@ -29,7 +29,7 @@ const topics = [
   },
   {
     title: "Pembayaran",
-    body: "Untuk transfer atau COD, sertakan nomor pesanan dan bukti transfer kalau ada. Admin mencocokkan secara manual.",
+    body: "Untuk transfer, QRIS, atau COD, sertakan nomor pesanan dan bukti pembayaran kalau ada. Admin mencocokkan secara manual.",
   },
   {
     title: "Pesanan jumlah besar",

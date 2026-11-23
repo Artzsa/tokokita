@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { inspectQris } from "@/lib/qris";
 
 export type BusinessState = {
   error?: string;
@@ -20,6 +21,7 @@ const fields = [
   "bankName",
   "bankNumber",
   "bankHolder",
+  "qrisPayload",
 ] as const;
 
 type Field = (typeof fields)[number];
@@ -56,6 +58,7 @@ export async function saveBusinessSettingsAction(
     bankName: 80,
     bankNumber: 40,
     bankHolder: 120,
+    qrisPayload: 2048,
   };
   const labels: Record<Field, string> = {
     storeCity: "Kota atau asal",
@@ -66,6 +69,7 @@ export async function saveBusinessSettingsAction(
     bankName: "Nama bank",
     bankNumber: "Nomor rekening",
     bankHolder: "Nama pemilik rekening",
+    qrisPayload: "Data QRIS",
   };
 
   for (const key of fields) {
@@ -85,6 +89,12 @@ export async function saveBusinessSettingsAction(
   }
   if (values.bankNumber && values.bankNumber.replace(/\D/g, "").length < 5) {
     return fail("Nomor rekening minimal 5 angka.");
+  }
+
+  if (values.qrisPayload) {
+    const qris = inspectQris(values.qrisPayload);
+    if (!qris.ok) return fail(`QRIS belum bisa dipakai: ${qris.error}`);
+    values.qrisPayload = qris.payload;
   }
 
   await prisma.$transaction(

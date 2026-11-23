@@ -3,7 +3,7 @@ import { formatIDR } from "@/lib/format";
 import { store } from "@/lib/store";
 import { getSettings } from "@/lib/settings";
 import { whatsappNumber } from "@/lib/contact";
-import { bankIsReady } from "@/lib/business";
+import { bankIsReady, qrisIsReady } from "@/lib/business";
 
 export const metadata: Metadata = {
   title: "Kebijakan",
@@ -11,26 +11,36 @@ export const metadata: Metadata = {
     "Kebijakan pembayaran, pengiriman, pembatalan, dan privasi Toko Kita.",
 };
 
-const summary = [
-  {
-    label: "Ongkir",
-    value: `${formatIDR(store.flatShipping)} · gratis di atas ${formatIDR(store.freeShippingThreshold)}`,
-  },
-  { label: "Pembayaran", value: "Transfer bank atau COD" },
-  { label: "Proses", value: "Dicek manual oleh admin" },
-  { label: "Pesanan pending", value: "Dibatalkan setelah 3 hari" },
-];
+function getSummary(qrisReady: boolean) {
+  return [
+    {
+      label: "Ongkir",
+      value: `${formatIDR(store.flatShipping)} · gratis di atas ${formatIDR(store.freeShippingThreshold)}`,
+    },
+    {
+      label: "Pembayaran",
+      value: qrisReady ? "Transfer bank, QRIS, atau COD" : "Transfer bank atau COD",
+    },
+    { label: "Proses", value: "Dicek manual oleh admin" },
+    { label: "Pesanan pending", value: "Dibatalkan setelah 3 hari" },
+  ];
+}
 
-function getSections(bankReady: boolean) {
+function getSections(bankReady: boolean, qrisReady: boolean) {
   return [
   {
     id: "pembayaran",
     title: "Pembayaran",
     body: [
-      "Pembayaran dilakukan lewat transfer bank atau bayar di tempat (COD). Situs ini belum menerima kartu kredit, cicilan, atau pembayaran otomatis.",
+      qrisReady
+        ? "Pembayaran dilakukan lewat transfer bank, QRIS, atau bayar di tempat (COD). Situs ini belum menerima kartu kredit, cicilan, atau pembayaran otomatis."
+        : "Pembayaran dilakukan lewat transfer bank atau bayar di tempat (COD). Situs ini belum menerima kartu kredit, cicilan, atau pembayaran otomatis.",
       bankReady
         ? "Nomor rekening tampil di halaman pesanan setelah checkout. Admin mencocokkan pembayaran secara manual, lalu mengubah status pesanan."
         : "Instruksi transfer dikirim lewat WhatsApp setelah pesanan dicek. Admin mencocokkan pembayaran secara manual, lalu mengubah status pesanan.",
+      qrisReady
+        ? "QRIS menampilkan nominal pesanan yang sudah terisi. QR hanya dibuka 10 menit, lalu bisa dimunculkan lagi dari halaman pesanan. Pembayaran QRIS tetap dicocokkan manual oleh admin."
+        : "QRIS belum tersedia di toko ini.",
       "Pesanan yang belum dibayar atau dikonfirmasi selama 3 hari dibatalkan otomatis. Stok dari pesanan itu dilepas kembali ke katalog.",
       "Nominal yang harus dibayar tercantum di halaman pesanan. Tidak ada biaya tambahan di luar harga barang dan ongkir.",
     ],
@@ -87,7 +97,8 @@ export default async function PolicyPage() {
   const settings = await getSettings();
   const whatsapp = whatsappNumber(settings);
   const waLink = `https://wa.me/${whatsapp}?text=${encodeURIComponent("Halo Toko Kita, saya mau tanya soal kebijakan toko.")}`;
-  const sections = getSections(bankIsReady(settings));
+  const sections = getSections(bankIsReady(settings), qrisIsReady(settings));
+  const summary = getSummary(qrisIsReady(settings));
 
   return (
     <div className="wrap pt-12 md:pt-16">
@@ -103,7 +114,7 @@ export default async function PolicyPage() {
           yang terasa tidak jelas, tanyakan sebelum memesan.
         </p>
         <p className="mt-4 text-[11px] text-muted">
-          Diperbarui 22 November 2026
+          Diperbarui 23 November 2026
         </p>
       </header>
 

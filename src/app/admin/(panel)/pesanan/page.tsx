@@ -9,6 +9,8 @@ import {
   formatIDR,
   orderStatusLabel,
   orderStatuses,
+  paymentMethodLabel,
+  paymentStatusLabel,
 } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Pesanan" };
@@ -120,7 +122,16 @@ export default async function AdminOrdersPage({
                     {order._count.items}
                   </td>
                   <td className="py-3 pr-4 text-[11px] uppercase tracking-[0.08em] text-muted">
-                    {order.paymentMethod === "cod" ? "COD" : "Transfer"}
+                    {paymentMethodLabel(order.paymentMethod)}
+                    <span
+                      className={`mt-0.5 block text-[10px] normal-case tracking-normal ${
+                        order.paymentStatus === "paid"
+                          ? "text-moss"
+                          : "text-clay-deep"
+                      }`}
+                    >
+                      {paymentStatusLabel(order.paymentStatus)}
+                    </span>
                   </td>
                   <td className="py-3 pr-4 text-right tabular-nums">
                     {formatIDR(order.total)}

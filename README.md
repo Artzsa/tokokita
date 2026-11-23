@@ -1,6 +1,6 @@
 # Toko Kita
 
-Toko online kecil yang dijalankan lokal di laptop. Katalog, keranjang, checkout manual (transfer/COD), dan panel admin. Semuanya pakai Next.js + SQLite, tanpa layanan pihak ketiga.
+Toko online kecil yang dijalankan lokal di laptop. Katalog, keranjang, checkout manual (transfer/QRIS/COD), dan panel admin. Semuanya pakai Next.js + SQLite, tanpa layanan pihak ketiga.
 
 ## Jalankan di laptop
 
@@ -46,12 +46,13 @@ Kalau hanya ingin menjalankan manual, tetap bisa pakai `npm run dev` dan
 
 - Beranda editorial, katalog dengan filter kategori + pencarian + urutan, halaman produk, keranjang, checkout, halaman konfirmasi pesanan.
 - Halaman Tentang, Kontak, FAQ, dan Kebijakan dengan salinan yang ditulis manual.
-- Pengaturan toko di panel admin: kota/asal, alamat, email, Instagram, jam buka, dan rekening bank. Bagian yang kosong tidak ditampilkan di toko.
+- Pengaturan toko di panel admin: kota/asal, alamat, email, Instagram, jam buka, rekening bank, dan QRIS merchant. Bagian yang kosong tidak ditampilkan di toko.
 - Kata sandi admin bisa diganti dari **Pengaturan > Keamanan**.
 - Panel admin: ringkasan, kelola produk (termasuk unggah foto & varian), kelola pesanan + ubah status, kelola kategori.
 - Sesi admin pakai cookie bertanda tangan HMAC; keranjang juga disimpan di cookie. Tidak ada database user yang kompleks.
-- Pembayaran masih manual: transfer bank atau COD. Tidak ada gateway.
-- Status pesanan lengkap: menunggu bayar → dibayar → dikemas → dikirim → selesai, plus dibatalkan (stok otomatis dikembalikan). Pesanan pending otomatis dibatalkan setelah 3 hari.
+- Pembayaran manual: transfer bank, QRIS statis yang diubah jadi dinamis per pesanan, atau COD. Tidak ada gateway dan tidak ada webhook.
+- Status pembayaran terpisah dari status pesanan: belum dibayar, lunas, atau dikembalikan. Admin menandai lunas dari detail pesanan setelah mencocokkan bukti WhatsApp.
+- Status pesanan lengkap: menunggu bayar → dibayar → dikemas → dikirim → selesai, plus dibatalkan (stok otomatis dikembalikan). Pesanan pending yang belum lunas otomatis dibatalkan setelah 3 hari.
 - Notifikasi WhatsApp untuk setiap perubahan status lewat tabel `NotificationOutbox` + bot Baileys. Pesan tidak hilang walau bot sedang mati. Pesan yang gagal bisa dikirim ulang dari **Pengaturan**.
 - Kartu katalog 3D memakai Three.js + React Three Fiber: gambar produk jadi tekstur kartu berketebalan yang bisa diputar dengan kursor/panah keyboard. Scene di-*lazy load*. Di desktop, kartu katalog memasang kanvas saat di-hover; di layar sentuh dan dengan `prefers-reduced-motion`, gambar statis yang tampil.
 
@@ -64,6 +65,7 @@ Kalau hanya ingin menjalankan manual, tetap bisa pakai `npm run dev` dan
 | `npm run start`     | Jalankan hasil build                                |
 | `npm run lint`      | Cek eslint                                          |
 | `npm run db:push`   | Sinkronkan schema Prisma ke SQLite                   |
+| `npm run db:backfill-payments` | Isi status lunas pesanan lama (jalankan sekali setelah update) |
 | `npm run db:seed`   | Isi ulang data dummy (destruktif!)                  |
 | `npm run db:studio` | Buka Prisma Studio untuk melihat database           |
 | `npm run bot`       | Jalankan bot WhatsApp + worker notifikasi            |
@@ -71,6 +73,9 @@ Kalau hanya ingin menjalankan manual, tetap bisa pakai `npm run dev` dan
 ## Catatan penting
 
 - `npm run db:seed` **menghapus semua data** lalu mengisi ulang. Jangan dijalankan saat ada pesanan nyata.
+- QRIS memakai payload statis milik merchant (misalnya DANA Bisnis). Payload itu diubah per pesanan dengan menambahkan nominal dan nomor pesanan, lalu checksum dihitung ulang. Uang tetap masuk ke akun merchant, bukan ke aplikasi ini.
+- QRIS tidak bisa dicabut dari sisi bank. Halaman hanya menyembunyikan QR setelah 10 menit; screenshot lama masih bisa dibayar. Kalau itu terjadi, admin menandai lunas atau mengembalikan dana secara manual. Untuk pencabutan sungguhan, perlu gateway pembayaran.
+- Pesanan lama yang sudah berstatus dibayar/dikemas/dikirim/selesai diisi `paidAt` dari `updatedAt` oleh `npm run db:backfill-payments`.
 - Foto produk saat ini foto stok dari [Openverse](https://openverse.org/) (lisensi CC0/public domain), bukan foto barang yang sebenarnya. Dipakai supaya bentuk produk bisa dibayangkan saat tekstur 3D diputar. Upload foto asli lewat panel admin; hasilnya masuk ke `public/uploads/products/`. Sumber tiap foto dicatat di bawah.
 - Database SQLite ada di `prisma/dev.db` dan sengaja tidak ikut version control. Isi ulang dengan `db:push` + `db:seed`.
 - `.env` berisi `AUTH_SECRET` placeholder. Isi dengan string acak panjang sebelum online.
@@ -100,7 +105,7 @@ Untuk pakai WA sungguhan:
 Bot melakukan:
 - membalas FAQ singkat & cek status pesanan (nomor `TK-YYMMDD-XXXX`) hanya untuk nomor yang pernah checkout dan cocok dengan nomor pemesan,
 - mengirim pesan dari `NotificationOutbox` ke WA pembeli, retry maksimal 3x,
-- membatalkan otomatis pesanan `pending` yang lewat 3 hari dan mengembalikan stoknya.
+- membatalkan otomatis pesanan `pending` yang belum lunas setelah 3 hari dan mengembalikan stoknya.
 
 > Baileys **bukan** API resmi WhatsApp. Risiko banned akun tetap ada. Jangan pakai untuk spam, dan jangan commit folder `bot/session/`.
 

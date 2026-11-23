@@ -10,8 +10,14 @@ import {
   formatIDR,
   orderStatusLabel,
   orderStatuses,
+  paymentMethodLabel,
+  paymentStatusLabel,
 } from "@/lib/format";
 import { updateOrderStatusAction } from "@/lib/actions/admin-actions";
+import {
+  markOrderPaidAction,
+  unmarkOrderPaidAction,
+} from "@/lib/actions/payment-actions";
 
 export const metadata: Metadata = { title: "Detail pesanan" };
 
@@ -246,19 +252,79 @@ export default async function AdminOrderDetailPage({
               Pembayaran
             </h2>
             <dl className="mt-4 space-y-2 text-[13px]">
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-4">
                 <dt className="text-muted">Metode</dt>
-                <dd>{order.paymentMethod === "cod" ? "COD" : "Transfer bank"}</dd>
+                <dd>{paymentMethodLabel(order.paymentMethod)}</dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-muted">Status</dt>
-                <dd>{orderStatusLabel(order.status)}</dd>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted">Status bayar</dt>
+                <dd
+                  className={
+                    order.paymentStatus === "paid"
+                      ? "font-medium text-moss"
+                      : "font-medium text-clay-deep"
+                  }
+                >
+                  {paymentStatusLabel(order.paymentStatus)}
+                </dd>
               </div>
-              <div className="flex justify-between border-t border-line pt-2">
+              {order.paidAt ? (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted">Diterima</dt>
+                  <dd className="text-right">{formatDateTime(order.paidAt)}</dd>
+                </div>
+              ) : null}
+              <div className="flex justify-between gap-4 border-t border-line pt-2">
                 <dt className="text-muted">Jumlah</dt>
                 <dd className="tabular-nums">{formatIDR(order.total)}</dd>
               </div>
             </dl>
+
+            {order.paymentNote ? (
+              <p className="mt-3 border-t border-line pt-3 text-[12px] leading-relaxed text-ink-soft">
+                Catatan: {order.paymentNote}
+              </p>
+            ) : null}
+
+            {order.paymentStatus === "paid" ? (
+              <form action={unmarkOrderPaidAction} className="mt-4">
+                <input type="hidden" name="id" value={order.id} />
+                <button type="submit" className="btn btn-ghost w-full">
+                  Batalkan penandaan lunas
+                </button>
+                <p className="mt-2 text-[11px] leading-relaxed text-muted">
+                  Status pembayaran kembali ke belum dibayar. Kalau status
+                  pesanan masih Sudah dibayar, status itu ikut kembali ke
+                  Menunggu pembayaran.
+                </p>
+              </form>
+            ) : (
+              <form action={markOrderPaidAction} className="mt-4 space-y-3">
+                <input type="hidden" name="id" value={order.id} />
+                <label htmlFor="paymentNote" className="label">
+                  Catatan pembayaran (opsional)
+                </label>
+                <textarea
+                  id="paymentNote"
+                  name="paymentNote"
+                  rows={2}
+                  placeholder="Contoh: QRIS DANA, sesuai nominal"
+                  className="input"
+                />
+                <button type="submit" className="btn btn-solid w-full">
+                  Tandai lunas
+                </button>
+                <p className="text-[11px] leading-relaxed text-muted">
+                  {order.paymentMethod === "qris"
+                    ? "Cek mutasi DANA dulu."
+                    : order.paymentMethod === "cod"
+                      ? "Pastikan uang tunai sudah diterima."
+                      : "Cek mutasi bank dulu."}{" "}
+                  Menandai lunas akan mengubah status pesanan menjadi Sudah
+                  dibayar dan mengirim kabar lewat WhatsApp.
+                </p>
+              </form>
+            )}
           </section>
         </div>
       </div>

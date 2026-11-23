@@ -2,11 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Check, MessageCircle } from "lucide-react";
+import QRCode from "qrcode";
 import { prisma } from "@/lib/db";
 import { formatDateTime, formatIDR, orderStatusLabel } from "@/lib/format";
 import { whatsappLink } from "@/lib/contact";
-import { bankIsReady } from "@/lib/business";
+import { bankIsReady, qrisIsReady } from "@/lib/business";
+import { buildDynamicQris, qrisMerchantName } from "@/lib/qris";
 import { getSettings } from "@/lib/settings";
+import { isPendingExpired } from "@/lib/order-expiry";
+import { QrisPaymentPanel } from "@/components/qris-payment-panel";
 
 export const metadata: Metadata = {
   title: "Pesanan",
@@ -43,25 +47,68 @@ export default async function OrderPage({
 
   const settings = await getSettings();
   const bankReady = bankIsReady(settings);
+  const qrisReady = qrisIsReady(settings);
   const firstName = order.customerName.split(" ")[0];
   const isPending = order.status === "pending";
   const isTransfer = order.paymentMethod === "transfer";
+  const isQris = order.paymentMethod === "qris";
+  const orderExpired = isPendingExpired(order.createdAt);
+  const qrisActive =
+    isQris &&
+    isPending &&
+    order.paymentStatus === "unpaid" &&
+    qrisReady &&
+    !orderExpired;
 
-  const confirmMessage = `Halo Toko Kita, saya mau konfirmasi pesanan ${order.number} sebesar ${formatIDR(order.total)}.`;
+  let qrisDataUrl = "";
+  let qrisMerchant = "";
+  let qrisError = "";
+
+  if (qrisActive) {
+    try {
+      qrisMerchant = qrisMerchantName(settings.qrisPayload);
+      const payload = buildDynamicQris({
+        payload: settings.qrisPayload,
+        amount: order.total,
+        billNumber: order.number,
+      });
+      qrisDataUrl = await QRCode.toDataURL(payload, {
+        width: 560,
+        margin: 1,
+        errorCorrectionLevel: "M",
+        color: { dark: "#14100c", light: "#ffffff" },
+      });
+    } catch {
+      qrisError =
+        "QRIS belum bisa ditampilkan. Hubungi admin lewat WhatsApp untuk instruksi pembayaran.";
+    }
+  }
+
+  const confirmMessage = isQris
+    ? `Halo Toko Kita, saya sudah bayar QRIS untuk pesanan ${order.number} sebesar ${formatIDR(order.total)}. Ini bukti pembayarannya.`
+    : `Halo Toko Kita, saya mau konfirmasi pesanan ${order.number} sebesar ${formatIDR(order.total)}.`;
 
   const steps = [
     {
-      title: isTransfer ? "Siapkan pembayaran" : "Siapkan pembayaran di tempat",
-      body: isTransfer
-        ? bankReady
-          ? `Transfer ke ${settings.bankName} ${settings.bankNumber} a.n. ${settings.bankHolder}. Cantumkan nomor pesanan di berita transfer.`
-          : "Minta nomor rekening lewat WhatsApp. Cantumkan nomor pesanan di pesan atau berita transfer."
-        : "Bayar tunai saat kurir menyerahkan barang. Siapkan uang pas bila memungkinkan.",
+      title: isQris
+        ? "Scan dan bayar"
+        : isTransfer
+          ? "Siapkan pembayaran"
+          : "Siapkan pembayaran di tempat",
+      body: isQris
+        ? qrisActive
+          ? "Buka QRIS di halaman ini, scan dengan aplikasi bank atau e-wallet, lalu bayar sesuai nominal yang sudah terisi."
+          : "Hubungi admin lewat WhatsApp untuk mendapatkan QRIS atau instruksi pembayaran."
+        : isTransfer
+          ? bankReady
+            ? `Transfer ke ${settings.bankName} ${settings.bankNumber} a.n. ${settings.bankHolder}. Cantumkan nomor pesanan di berita transfer.`
+            : "Minta nomor rekening lewat WhatsApp. Cantumkan nomor pesanan di pesan atau berita transfer."
+          : "Bayar tunai saat kurir menyerahkan barang. Siapkan uang pas bila memungkinkan.",
     },
     {
       title: "Konfirmasi ke kami",
-      body: isTransfer
-        ? "Kirim bukti transfer lewat WhatsApp supaya pesanan bisa dicek dan disiapkan."
+      body: isQris || isTransfer
+        ? "Kirim bukti pembayaran lewat WhatsApp supaya pesanan bisa dicek dan disiapkan."
         : "Admin akan menghubungi lewat WhatsApp untuk memastikan alamat dan waktu pengiriman.",
     },
     {
@@ -72,40 +119,42 @@ export default async function OrderPage({
 
   return (
     <div className="wrap pt-12 md:pt-16">
-      <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
+      <header>
+        <p className="eyebrow flex items-center gap-3">
+          <span className="flex size-6 items-center justify-center rounded-full bg-moss text-paper">
+            <Check size={13} />
+          </span>
+          Pesanan dibuat
+        </p>
+
+        <h1 className="display mt-5 text-[clamp(2.4rem,5vw,3.8rem)]">
+          Terima kasih, {firstName}.
+        </h1>
+        <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-ink-soft">
+          Pesananmu sudah tercatat. Simpan nomor dan tautan halaman ini. Kamu
+          bisa membukanya lagi untuk melihat status dan rincian.
+        </p>
+
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <span className="border border-line bg-paper-deep/60 px-4 py-2 font-mono text-[13px] tracking-wide">
+            {order.number}
+          </span>
+          <span
+            className={`border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${
+              statusTone[order.status] ?? statusTone.pending
+            }`}
+          >
+            {orderStatusLabel(order.status)}
+          </span>
+          <span className="text-[11px] uppercase tracking-[0.12em] text-muted">
+            {formatDateTime(order.createdAt)}
+          </span>
+        </div>
+      </header>
+
+      <div className="mt-10 grid gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
         <div>
-          <p className="eyebrow flex items-center gap-3">
-            <span className="flex size-6 items-center justify-center rounded-full bg-moss text-paper">
-              <Check size={13} />
-            </span>
-            Pesanan dibuat
-          </p>
-
-          <h1 className="display mt-5 text-[clamp(2.4rem,5vw,3.8rem)]">
-            Terima kasih, {firstName}.
-          </h1>
-          <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-ink-soft">
-            Pesananmu sudah tercatat. Simpan nomor dan tautan halaman ini. Kamu
-            bisa membukanya lagi untuk melihat status dan rincian.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <span className="border border-line bg-paper-deep/60 px-4 py-2 font-mono text-[13px] tracking-wide">
-              {order.number}
-            </span>
-            <span
-              className={`border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${
-                statusTone[order.status] ?? statusTone.pending
-              }`}
-            >
-              {orderStatusLabel(order.status)}
-            </span>
-            <span className="text-[11px] uppercase tracking-[0.12em] text-muted">
-              {formatDateTime(order.createdAt)}
-            </span>
-          </div>
-
-          <section className="mt-12">
+          <section>
             <h2 className="eyebrow">Rincian barang</h2>
             <div className="mt-4 border-t border-line">
               {order.items.map((item) => (
@@ -219,7 +268,7 @@ export default async function OrderPage({
           )}
         </div>
 
-        <aside className="lg:sticky lg:top-32 lg:self-start">
+        <aside className="order-first lg:order-none lg:sticky lg:top-32 lg:self-start">
           {isPending && isTransfer ? (
             <div className="border border-ink bg-ink p-6 text-paper">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-paper/60">
@@ -271,6 +320,41 @@ export default async function OrderPage({
                 {bankReady ? "Konfirmasi via WhatsApp" : "Minta instruksi transfer"}
               </a>
             </div>
+          ) : isPending && isQris ? (
+            qrisActive && qrisDataUrl ? (
+              <QrisPaymentPanel
+                qrDataUrl={qrisDataUrl}
+                merchantName={qrisMerchant}
+                orderNumber={order.number}
+                amountLabel={formatIDR(order.total)}
+                whatsappHref={await whatsappLink(confirmMessage)}
+              />
+            ) : (
+              <div className="border border-line bg-paper-deep/40 p-6">
+                <p className="eyebrow">QRIS</p>
+                <p className="display mt-3 text-3xl tabular-nums">
+                  {formatIDR(order.total)}
+                </p>
+                <p className="mt-3 text-[13px] leading-relaxed text-muted">
+                  {qrisError
+                    ? qrisError
+                    : orderExpired
+                      ? "QRIS untuk pesanan ini sudah ditutup karena pesanan berumur lebih dari 3 hari."
+                      : "QRIS belum tersedia di toko ini."}
+                </p>
+                <a
+                  href={await whatsappLink(
+                    `Halo Toko Kita, saya mau tanya soal pembayaran pesanan ${order.number}.`,
+                  )}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-ghost mt-6 w-full"
+                >
+                  <MessageCircle size={15} />
+                  Hubungi admin
+                </a>
+              </div>
+            )
           ) : (
             <div className="border border-line bg-paper-deep/40 p-6">
               <p className="eyebrow">Total pesanan</p>
@@ -280,7 +364,9 @@ export default async function OrderPage({
               <p className="mt-3 text-[13px] leading-relaxed text-muted">
                 {order.paymentMethod === "cod"
                   ? "Dibayar tunai saat barang diterima."
-                  : "Pembayaran sudah kami catat atau sedang diverifikasi."}
+                  : order.paymentStatus === "paid"
+                    ? "Pembayaran sudah kami terima."
+                    : "Pembayaran belum kami catat. Hubungi admin kalau sudah membayar."}
               </p>
               <a
                 href={await whatsappLink(

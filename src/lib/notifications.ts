@@ -14,10 +14,16 @@ export function buildStatusMessage(
   status: string,
 ): string {
   const name = order.customerName.split(" ")[0];
+  const method =
+    order.paymentMethod === "cod"
+      ? "COD"
+      : order.paymentMethod === "qris"
+        ? "QRIS"
+        : "transfer bank";
 
   switch (status) {
     case "pending":
-      return `Halo ${name}, pesananmu sudah tercatat dengan nomor ${order.number}. Total ${formatIDR(order.total)}, dibayar lewat ${order.paymentMethod === "cod" ? "COD" : "transfer bank"}. Terima kasih sudah belanja di ${store.name}.`;
+      return `Halo ${name}, pesananmu sudah tercatat dengan nomor ${order.number}. Total ${formatIDR(order.total)}, dibayar lewat ${method}. Terima kasih sudah belanja di ${store.name}.`;
     case "paid":
       return `Halo ${name}, pembayaran pesanan ${order.number} sebesar ${formatIDR(order.total)} sudah kami terima. Terima kasih! Barang akan segera kami kemas.`;
     case "packed":

@@ -17,6 +17,7 @@ export type Settings = {
   bankName: string;
   bankNumber: string;
   bankHolder: string;
+  qrisPayload: string;
 };
 
 function bool(value: string | undefined, fallback: boolean) {
@@ -49,6 +50,7 @@ function defaults(): Settings {
     bankName: "",
     bankNumber: "",
     bankHolder: "",
+    qrisPayload: "",
   };
 }
 
@@ -87,5 +89,6 @@ export async function getSettings(): Promise<Settings> {
     bankName: map.get("bankName") ?? base.bankName,
     bankNumber: map.get("bankNumber") ?? base.bankNumber,
     bankHolder: map.get("bankHolder") ?? base.bankHolder,
+    qrisPayload: map.get("qrisPayload") ?? base.qrisPayload,
   };
 }

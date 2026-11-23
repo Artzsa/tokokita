@@ -4,7 +4,7 @@ import { MessageCircle, Plus } from "lucide-react";
 import { formatIDR } from "@/lib/format";
 import { store } from "@/lib/store";
 import { whatsappLink } from "@/lib/contact";
-import { bankIsReady } from "@/lib/business";
+import { bankIsReady, qrisIsReady } from "@/lib/business";
 import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
@@ -13,7 +13,14 @@ export const metadata: Metadata = {
     "Cara memesan, pembayaran, pengiriman, stok, dan bot WhatsApp Toko Kita.",
 };
 
-function getGroups(bankReady: boolean) {
+function getGroups(bankReady: boolean, qrisReady: boolean) {
+  const transferHelp = bankReady
+    ? "Untuk transfer, nomor rekening tampil di halaman pesanan setelah checkout."
+    : "Untuk transfer, minta nomor rekening lewat WhatsApp setelah pesanan dibuat.";
+  const qrisHelp = qrisReady
+    ? " Untuk QRIS, QR tampil di halaman pesanan dan hanya dibuka 10 menit."
+    : "";
+
   return [
   {
     title: "Pesanan",
@@ -32,9 +39,7 @@ function getGroups(bankReady: boolean) {
       },
       {
         q: "Bisa bayar di tempat (COD)?",
-        a: bankReady
-          ? "Bisa. Pilih COD di checkout. Untuk transfer, nomor rekening tampil di halaman pesanan setelah checkout."
-          : "Bisa. Pilih COD di checkout. Untuk transfer, minta nomor rekening lewat WhatsApp setelah pesanan dibuat.",
+        a: `Bisa. Pilih COD di checkout. ${transferHelp}${qrisHelp}`,
       },
     ],
   },
@@ -43,7 +48,9 @@ function getGroups(bankReady: boolean) {
     items: [
       {
         q: "Metode pembayaran apa saja yang diterima?",
-        a: "Transfer bank dan COD. Tidak ada pembayaran kartu atau cicilan di situs ini. Admin mencocokkan pembayaran secara manual.",
+        a: qrisReady
+          ? "Transfer bank, QRIS, dan COD. QRIS menampilkan nominal pesanan dan hanya dibuka 10 menit. Tidak ada pembayaran kartu atau cicilan di situs ini. Admin mencocokkan pembayaran secara manual."
+          : "Transfer bank dan COD. Tidak ada pembayaran kartu atau cicilan di situs ini. Admin mencocokkan pembayaran secara manual.",
       },
       {
         q: "Berapa ongkos kirim?",
@@ -109,7 +116,7 @@ export default async function FaqPage() {
     getSettings(),
     whatsappLink("Halo Toko Kita, saya mau tanya sesuatu."),
   ]);
-  const groups = getGroups(bankIsReady(settings));
+  const groups = getGroups(bankIsReady(settings), qrisIsReady(settings));
 
   return (
     <div className="wrap pt-12 md:pt-16">

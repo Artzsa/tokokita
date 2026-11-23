@@ -1,8 +1,9 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "./db";
 import { buildStatusMessage } from "./notifications";
+import { PENDING_EXPIRY_MS } from "./order-expiry";
 
-const PENDING_EXPIRY_MS = 3 * 24 * 60 * 60 * 1000;
+const PAID_STATUSES = ["paid", "packed", "shipped", "completed"];
 
 async function restoreStock(tx: Prisma.TransactionClient, orderId: string) {
   const items = await tx.orderItem.findMany({ where: { orderId } });
@@ -27,6 +28,7 @@ export async function applyStatusChange(
   orderId: string,
   nextStatus: string,
   cancelReason?: string,
+  options?: { notify?: boolean },
 ) {
   return prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
@@ -38,6 +40,7 @@ export async function applyStatusChange(
         paymentMethod: true,
         phone: true,
         status: true,
+        paymentStatus: true,
       },
     });
     if (!order) return { changed: false, reason: "not-found" as const };
@@ -47,6 +50,8 @@ export async function applyStatusChange(
 
     const becomingCancelled = nextStatus === "cancelled";
     const leavingCancelled = order.status === "cancelled";
+    const becomingPaid =
+      PAID_STATUSES.includes(nextStatus) && order.paymentStatus !== "paid";
 
     if (becomingCancelled && !leavingCancelled && !cancelReason) {
       return { changed: false, reason: "reason-required" as const };
@@ -57,6 +62,9 @@ export async function applyStatusChange(
       data: {
         status: nextStatus,
         cancelReason: becomingCancelled ? cancelReason ?? null : null,
+        ...(becomingPaid
+          ? { paymentStatus: "paid", paidAt: new Date() }
+          : {}),
       },
     });
 
@@ -64,22 +72,24 @@ export async function applyStatusChange(
       await restoreStock(tx, orderId);
     }
 
-    await tx.notificationOutbox.create({
-      data: {
-        orderId,
-        phone: order.phone,
-        message: buildStatusMessage(
-          {
-            number: order.number,
-            customerName: order.customerName,
-            total: order.total,
-            paymentMethod: order.paymentMethod,
-            cancelReason: becomingCancelled ? cancelReason : null,
-          },
-          nextStatus,
-        ),
-      },
-    });
+    if (options?.notify !== false) {
+      await tx.notificationOutbox.create({
+        data: {
+          orderId,
+          phone: order.phone,
+          message: buildStatusMessage(
+            {
+              number: order.number,
+              customerName: order.customerName,
+              total: order.total,
+              paymentMethod: order.paymentMethod,
+              cancelReason: becomingCancelled ? cancelReason : null,
+            },
+            nextStatus,
+          ),
+        },
+      });
+    }
 
     return { changed: true, reason: "ok" as const };
   });
@@ -88,7 +98,11 @@ export async function applyStatusChange(
 export async function cancelExpiredPendingOrders() {
   const cutoff = new Date(Date.now() - PENDING_EXPIRY_MS);
   const expired = await prisma.order.findMany({
-    where: { status: "pending", createdAt: { lt: cutoff } },
+    where: {
+      status: "pending",
+      paymentStatus: { not: "paid" },
+      createdAt: { lt: cutoff },
+    },
     select: { id: true },
   });
 

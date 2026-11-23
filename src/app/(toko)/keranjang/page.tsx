@@ -115,7 +115,8 @@ export default async function CartPage({
             </CartSummary>
 
             <p className="mt-4 text-center text-[11px] leading-relaxed text-muted">
-              Pembayaran transfer bank atau COD. Tidak ada biaya tersembunyi.
+              Pembayaran transfer bank, QRIS, atau COD. Tidak ada biaya
+              tersembunyi.
             </p>
           </div>
         </div>

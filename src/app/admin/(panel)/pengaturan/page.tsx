@@ -79,8 +79,8 @@ export default async function SettingsPage() {
           Pengaturan
         </h1>
         <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted">
-          Atur identitas toko, pembayaran transfer, notifikasi, dan koneksi
-          WhatsApp. Nilai disimpan di database dan dibaca bot pada siklus
+          Atur identitas toko, pembayaran transfer dan QRIS, notifikasi, dan
+          koneksi WhatsApp. Nilai disimpan di database dan dibaca bot pada siklus
           berikutnya.
         </p>
       </header>

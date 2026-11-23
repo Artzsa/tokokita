@@ -90,7 +90,10 @@ export default async function AdminDashboardPage({
   if (data.pendingCount > 0) {
     urgent.push({
       label: "Menunggu pembayaran",
-      detail: `Cek transfer, lalu ubah status. Pesanan tertua ${pendingAge}.`,
+      detail:
+        data.staleUnpaidCount > 0
+          ? `Cek pembayaran, lalu ubah status. ${data.staleUnpaidCount} pesanan belum dibayar lebih dari 1 hari.`
+          : `Cek pembayaran, lalu ubah status. Pesanan tertua ${pendingAge}.`,
       count: data.pendingCount,
       href: "/admin/pesanan?status=pending",
     });
@@ -280,7 +283,7 @@ export default async function AdminDashboardPage({
             {formatIDR(data.revenue)}
           </p>
           <p className="mt-2 text-[11px] text-muted">
-            Status dibayar ke atas, {rangeLabel(range).toLowerCase()}
+            Pembayaran diterima, {rangeLabel(range).toLowerCase()}
           </p>
         </Link>
         <Link
