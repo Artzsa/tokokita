@@ -18,7 +18,7 @@ const steps = [
   },
   {
     title: "Pembayaran dicek manual",
-    body: "Transfer bank, QRIS, atau COD. Admin membuka pesanan, mencocokkan pembayaran, lalu mengubah status. Tidak ada pembayaran otomatis di situs.",
+    body: "Transfer bank atau COD. Admin membuka pesanan, mencocokkan pembayaran, lalu mengubah status. Tidak ada pembayaran otomatis di situs.",
   },
   {
     title: "Pesanan disiapkan dan dikirim",

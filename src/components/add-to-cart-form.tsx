@@ -74,8 +74,8 @@ export function AddToCartForm({
 
       <p className="text-xs leading-relaxed text-muted">
         Ongkir dihitung di checkout. Gratis untuk pesanan di atas{" "}
-        {formatIDR(store.freeShippingThreshold)}. Pembayaran transfer bank,
-        QRIS, atau COD.
+        {formatIDR(store.freeShippingThreshold)}. Pembayaran transfer bank atau
+        COD.
       </p>
     </form>
   );

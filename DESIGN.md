@@ -8,7 +8,7 @@ Dokumen ini adalah sumber arah visual dan aturan konten. Filter anti-slop dipaka
 - **Siapa pembelinya:** orang yang mencari barang awet dan mau membaca bahan, ukuran, serta asal barang sebelum membeli.
 - **Tugas utama pembeli:** menemukan produk, memahami ukurannya, lalu checkout tanpa akun.
 - **Tugas utama admin:** melihat pesanan yang perlu ditindaklanjuti, mengubah status, dan memastikan bot WhatsApp hidup.
-- **Kendala:** pembayaran manual (transfer, QRIS, atau COD), konfirmasi lewat WhatsApp, katalog kecil, pengelolaan satu orang.
+- **Kendala:** pembayaran manual (transfer atau COD), konfirmasi lewat WhatsApp, katalog kecil, pengelolaan satu orang.
 
 ## 2. Karakter merek
 

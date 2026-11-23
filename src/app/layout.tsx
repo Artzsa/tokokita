@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s · Toko Kita",
   },
   description:
-    "Toko online kecil untuk perkakas rumah, tas, dan alat kerja. Checkout tanpa akun, stok dihitung dari sisa, pembayaran transfer, QRIS, atau COD.",
+    "Toko online kecil untuk perkakas rumah, tas, dan alat kerja. Checkout tanpa akun, stok dihitung dari sisa, pembayaran transfer atau COD.",
 };
 
 export const viewport: Viewport = {

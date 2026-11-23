@@ -1,7 +1,7 @@
 import "dotenv/config";
 import type { WAMessage } from "@whiskeysockets/baileys";
 import { config, maskPhone, refreshConfig } from "./config";
-import { getKnownCustomerPhones, isKnownCustomer } from "./customers";
+// Whitelist pelanggan dinonaktifkan: bot membalas semua nomor.
 import { getSettings, setSetting } from "../src/lib/settings";
 import { helpMessage } from "./faq";
 import { getRules, matchRule } from "../src/lib/rules";
@@ -57,14 +57,6 @@ async function handleIncoming(message: WAMessage) {
   }
   if (!sender.phone) {
     console.log(`[chat] diabaikan: ${meta} alasan=identitas pengirim tidak diketahui`);
-    return;
-  }
-
-  const known = await isKnownCustomer(sender.phone);
-  if (!known) {
-    console.log(
-      `[chat] diabaikan: ${meta} alasan=nomor tidak ada di database text=${JSON.stringify(text).slice(0, 60)}`,
-    );
     return;
   }
 
@@ -148,9 +140,8 @@ async function main() {
     sweepExpiredOrders().catch((error) => console.error("[sweep] error:", error));
   }, config.sweepMs);
 
-  const knownPhones = await getKnownCustomerPhones();
   console.log(
-    `[bot] Siap. Poll outbox tiap ${config.pollMs} ms · whitelist ${knownPhones.size} nomor pelanggan · dryRun=${config.dryRun}`,
+    `[bot] Siap. Poll outbox tiap ${config.pollMs} ms · membalas semua nomor · dryRun=${config.dryRun}`,
   );
 
   process.on("unhandledRejection", (reason) => {

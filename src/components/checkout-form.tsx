@@ -72,13 +72,7 @@ function Field({
   );
 }
 
-export function CheckoutForm({
-  bankReady,
-  qrisReady,
-}: {
-  bankReady: boolean;
-  qrisReady: boolean;
-}) {
+export function CheckoutForm({ bankReady }: { bankReady: boolean }) {
   const [state, formAction] = useActionState<CheckoutState, FormData>(
     placeOrderAction,
     {},
@@ -192,15 +186,13 @@ export function CheckoutForm({
 
       <fieldset>
         <legend className="eyebrow mb-4">Cara bayar</legend>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <label className="cursor-pointer">
             <input
               type="radio"
               name="paymentMethod"
               value="transfer"
-              defaultChecked={
-                values.paymentMethod !== "cod" && values.paymentMethod !== "qris"
-              }
+              defaultChecked={values.paymentMethod !== "cod"}
               className="peer sr-only"
             />
             <span className="block border border-line p-4 transition-colors peer-checked:border-ink peer-checked:bg-paper-deep/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-clay">
@@ -234,24 +226,6 @@ export function CheckoutForm({
             </span>
           </label>
 
-          {qrisReady ? (
-            <label className="cursor-pointer">
-              <input
-                type="radio"
-                name="paymentMethod"
-                value="qris"
-                defaultChecked={values.paymentMethod === "qris"}
-                className="peer sr-only"
-              />
-              <span className="block border border-line p-4 transition-colors peer-checked:border-ink peer-checked:bg-paper-deep/60 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-clay">
-                <span className="block text-[13px] font-semibold">QRIS</span>
-                <span className="mt-1 block text-xs leading-relaxed text-muted">
-                  Scan pakai aplikasi bank atau e-wallet. QR berlaku 10 menit.
-                  Kirim bukti lewat WhatsApp.
-                </span>
-              </span>
-            </label>
-          ) : null}
         </div>
       </fieldset>
 

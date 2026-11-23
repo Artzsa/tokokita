@@ -14,7 +14,7 @@ const process = [
   },
   {
     title: "Pembayaran dicek manual",
-    body: "Transfer, QRIS, dan COD dikonfirmasi admin lewat WhatsApp sebelum pesanan dikemas.",
+    body: "Transfer dan COD dikonfirmasi admin lewat WhatsApp sebelum pesanan dikemas.",
   },
   {
     title: "Nomor pesanan bisa dibuka lagi",

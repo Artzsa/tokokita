@@ -7,8 +7,7 @@ import { prisma } from "@/lib/db";
 import { orderNumber } from "@/lib/format";
 import { enqueueStatusNotification } from "@/lib/outbox";
 import { shippingFor } from "@/lib/store";
-import { getSettings } from "@/lib/settings";
-import { qrisIsReady } from "@/lib/business";
+
 
 export type CheckoutState = {
   error?: string;
@@ -42,7 +41,7 @@ const schema = z.object({
     .trim()
     .regex(/^\d{4,6}$/, "Kode pos harus 4–6 angka."),
   notes: z.string().trim().max(500, "Catatan maksimal 500 karakter.").optional(),
-  paymentMethod: z.enum(["transfer", "cod", "qris"]),
+  paymentMethod: z.enum(["transfer", "cod"]),
 });
 
 
@@ -79,17 +78,6 @@ export async function placeOrderAction(
 
   const data = parsed.data;
   const cart = await getCart();
-
-  if (data.paymentMethod === "qris") {
-    const settings = await getSettings();
-    if (!qrisIsReady(settings)) {
-      return {
-        error:
-          "QRIS belum tersedia di toko ini. Pilih transfer bank atau COD dulu.",
-        values: raw,
-      };
-    }
-  }
 
   if (cart.lines.length === 0) {
     return {
