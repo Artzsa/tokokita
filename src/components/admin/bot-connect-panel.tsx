@@ -69,7 +69,10 @@ export function BotConnectPanel() {
   }
 
   return (
-    <section className="border border-line bg-paper p-5">
+    <section
+      id="koneksi-whatsapp"
+      className="scroll-mt-24 border border-line bg-paper p-5"
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">

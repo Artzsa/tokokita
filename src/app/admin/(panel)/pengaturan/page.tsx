@@ -97,7 +97,10 @@ export default async function SettingsPage() {
       </dl>
 
       {failed.length > 0 ? (
-        <section className="mt-6 border border-line bg-paper p-5">
+        <section
+          id="pesan-gagal"
+          className="mt-6 scroll-mt-24 border border-line bg-paper p-5"
+        >
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
