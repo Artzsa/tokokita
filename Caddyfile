@@ -1,0 +1,7 @@
+# Ganti toko.example.com dengan domain kamu (arahkan A record ke IP VPS).
+# Caddy otomatis mengurus sertifikat HTTPS (Let's Encrypt).
+# Kalau belum punya domain, lihat DEPLOY.md untuk opsi sementara.
+toko.example.com {
+	encode gzip
+	reverse_proxy 127.0.0.1:3000
+}
